@@ -1,0 +1,156 @@
+name: CI
+on:
+  push:
+    branches:
+      - master
+      - next
+  pull_request:
+    branches:
+      - master
+      - next
+
+env:
+  RUSTFLAGS: -Dwarnings
+  rust_min: 1.75
+
+jobs:
+  format:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout sources
+        uses: actions/checkout@v3
+
+      - name: Install toolchain
+        uses: dtolnay/rust-toolchain@nightly
+        with:
+          components: rustfmt
+
+      - name: Check formatting for workspace
+        run: cargo fmt --all -- --check
+
+  verify-codegen-crate:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: openapi
+
+    steps:
+      - name: Checkout sources
+        uses: actions/checkout@v3
+
+      - name: Install nightly toolchain
+        uses: dtolnay/rust-toolchain@nightly
+        with:
+          components: rustfmt
+
+      - name: Check formatting
+        run: cargo +nightly fmt -- --check
+
+      - name: Install toolchain
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          components: clippy
+
+      - name: Run clippy
+        run: cargo clippy
+
+      - name: Run codegen
+        run: cargo run --release -- --fetch current
+
+      - name: Ensure generated files unchanged
+        uses: tj-actions/verify-changed-files@v11.1
+        id: verify-changed-files
+        with:
+          files: |
+            **/*.rs
+
+      - name: Report changed files
+        if: steps.verify-changed-files.outputs.files_changed == 'true'
+        run: |
+          echo "Some files changed after code generation: ${{ steps.verify-changed-files.outputs.changed_files }}"
+          exit 1
+
+  clippy:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        features:
+          [
+            default-tls,
+            rustls-tls-webpki-roots,
+            rustls-tls-native,
+            async-std-surf,
+          ]
+
+    steps:
+      - name: Checkout sources
+        uses: actions/checkout@v3
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          toolchain: ${{ env.rust_min }}
+          components: clippy
+
+      - uses: Swatinem/rust-cache@v2
+
+      - name: Run clippy
+        run: cargo clippy --no-default-features --features "full serialize deserialize ${{ matrix.features }}"
+
+  test-clients:
+    name: Test Clients
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        features:
+          [
+            default-tls,
+            rustls-tls-webpki-roots,
+            rustls-tls-native,
+            async-std-surf,
+          ]
+
+    steps:
+      - name: Checkout sources
+        uses: actions/checkout@v3
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          toolchain: ${{ env.rust_min }}
+          components: clippy
+
+      - uses: Swatinem/rust-cache@v2
+
+      - name: Run tests
+        run: cargo test --no-default-features --features "full serialize deserialize ${{ matrix.features }}"
+
+
+  docs:
+    name: Docs
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - uses: Swatinem/rust-cache@v2
+
+      - name: Build Documentation
+        run: cargo doc --lib --no-deps --features "full serialize deserialize"
+
+  # Examples tested separately so that we can use crates which don't match our MSRV
+  examples:
+    name: Check Examples
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - uses: Swatinem/rust-cache@v2
+
+      - name: Check examples
+        run: cargo clippy --workspace

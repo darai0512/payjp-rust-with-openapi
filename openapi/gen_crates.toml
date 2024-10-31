@@ -1,0 +1,22 @@
+[[crates]]
+name = "core"
+paths = ["token", "term"]
+packages = ["apps"]
+description = "test core"
+
+[[crates]]
+name = "shared"
+paths = ["error"]
+description = '''
+paths = [
+    "api_errors",
+    "shipping",
+]
+[[crates]]
+name = "connect"
+paths = ["account", "billing"]
+packages = ["apps"]
+[[crates]]
+name = "shared"
+paths = ["error"]
+description = "test shared"'''

@@ -1,0 +1,38 @@
+[workspace]
+members = [
+    "async-payjp-types",
+    "tests",
+    "generated/*",
+    "examples/*",
+    "openapi/out/crates/*",
+    "async-payjp-client-core",
+    "async-payjp",
+]
+
+# Skip "examples/*" when running default commands since that adds a bunch of deps that makes
+# development feedback loop slower.
+default-members = ["async-payjp", "async-payjp-types", "async-payjp-client-core", "generated/*", "openapi/out/crates/*"]
+resolver = "2"
+# Makes dependency management simpler to allow codegen crate to use whichever dep versions
+# it wants without affecting dependency resolution of the user-facing library crates
+
+[workspace.package]
+version = "0.0.1"
+description = "API bindings for the Payjp HTTP API (like async-stripe by arlyon)"
+rust-version = "1.75.0"
+authors = []
+license = "MIT OR Apache-2.0"
+readme = "README.md"
+homepage = "https://github.com/darai0512/payjp-rust-with-openapi"
+repository = "https://github.com/darai0512/payjp-rust-with-openapi"
+documentation = "https://github.com/darai0512/payjp-rust-with-openapi"
+keywords = ["payjp", "api", "async", "openapi"]
+categories = ["api-bindings"]
+edition = "2021"
+
+[workspace.dependencies]
+serde = { version = ">=1.0.79", features = ["derive"] } # we use `serde(other)` which was introduced in 1.0.79
+smol_str = { version = "0.2.0", features = ["serde"] }
+miniserde = "0.1.34"
+serde_json = "1.0.115"
+serde_qs = "0.12.0"

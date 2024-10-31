@@ -1,0 +1,11 @@
+{
+  "customer": "#customers",
+  "account": "#account_object",
+  "subscription": "#subscriptions",
+  "charge": "/charges/object",
+  "plan": "/plans/object",
+  "balance": "/balance/balance_object",
+  "card": "/cards/object",
+  "token": "/tokens/object",
+  "event": "/events/object"
+}

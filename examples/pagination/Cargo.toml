@@ -1,0 +1,14 @@
+[package]
+name = "pagination"
+version = "0.0.1"
+edition = "2021"
+publish = false
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+futures-util = "0.3.28"
+tokio = { version = "1.24.1", features = ["rt-multi-thread", "macros"] }
+async-payjp = { path = "../../async-payjp" }
+async-payjp-core = { path = "../../generated/async-payjp-core", features = ["customer"] }
+pay = { path = "../../openapi/out/crates/async-stripe-core", features = ["term"] }

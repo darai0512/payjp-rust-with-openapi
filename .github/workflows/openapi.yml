@@ -1,0 +1,45 @@
+name: OpenAPI
+on:
+  schedule:
+    - cron: "0 0 * * 5"
+  workflow_dispatch:
+jobs:
+  update-openapi:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Install Rust with rustfmt
+        uses: dtolnay/rust-toolchain@nightly
+        with:
+          components: rustfmt
+
+      - name: Run Codegen
+        run: cargo run --release -- --fetch latest
+
+      - name: create pull request
+        uses: peter-evans/create-pull-request@v3
+        with:
+          token: ${{ secrets.REPO_SCOPED_TOKEN }}
+          commit-message: Generate latest changes from OpenApi spec
+          title: Generate latest changes from OpenApi spec
+          body: |
+            This is an automated PR that tries to build the latest changes generated from the [docs/api](https://pay.jp/docs/api).
+          branch: openapi
+          branch-suffix: timestamp
+          reviewers: arlyon
+      - name: email if failed
+        if: failure()
+        uses: dawidd6/action-send-mail@v3
+        with:
+          server_address: ${{ secrets.MAIL_SERVER }}
+          server_port: 465
+          username: ${{ secrets.MAIL_USERNAME }}
+          password: ${{ secrets.MAIL_PASSWORD }}
+          subject: Failed to generate latest changes from OpenApi spec
+          to: arlyon@me.com
+          from: Github Actions
+          body: |
+            This is an automated email. The workflow that tries to build the latest changes generated
+
+            Please visit ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }} to determine what failed.

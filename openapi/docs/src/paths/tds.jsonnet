@@ -1,0 +1,78 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "PAY.JP API",
+    "version": "1.0.0",
+    "description": "PAY.JP 3D Secure API specification in OpenAPI 3.0"
+  },
+  "paths": {
+    "/v1/tds/{resource_id}/start": {
+      "get": {
+        "summary": "3Dセキュア開始",
+        "description": "3Dセキュア認証画面をエンドユーザーに表示します。\nこのエンドポイントはJSONではなくエンドユーザーが直接アクセスしウェブページを表示するもので、SDK、または加盟店サーバーからのアクセスは想定されていません。\n詳しいご利用方法は下記チュートリアルをご参照ください。\n\n[支払いで3Dセキュアを実施する](/docs/charge-tds)",
+        "parameters": [
+          {
+            "name": "resource_id",
+            "in": "path",
+            "description": "3Dセキュア対象のオブジェクトのID",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "publickey",
+            "in": "query",
+            "description": "加盟店の公開API鍵。ここで指定した鍵によってlivemode/testmodeが決定されます。他のパラメータについてもpublickeyで指定された鍵のモードに合わせる必要があります。(backで指定する識別子のモード、back_urlの署名秘密鍵のモード等)",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "back",
+            "in": "query",
+            "description": "3Dセキュア処理後の戻り先とするリダイレクトURLの識別子。リダイレクトURLは事前に管理画面から登録します。",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "back_url",
+            "in": "query",
+            "description": "戻り先URLを含むJWS形式のデータ。backとback_urlが同時指定された場合、back_urlが優先されbackは無視されます。",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "3Dセキュア認証画面もしくはエラーページ",
+            "content": {
+              "text/html": {
+                "schema": {
+                  "type": "string",
+                  "description": "HTML content"
+                }
+              }
+            }
+          },
+          "4XX": {
+            "description": "エラーページ",
+            "content": {
+              "text/html": {
+                "schema": {
+                  "type": "string",
+                  "description": "HTML content representing the error page"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

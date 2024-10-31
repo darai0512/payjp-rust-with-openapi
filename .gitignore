@@ -1,0 +1,15 @@
+# Rust artifacts
+target/
+Cargo.lock
+**/*.rs.bk
+
+# Test artifacts
+lcov.info
+
+# IDE artifacts
+.DS_Store
+.code-workspace/
+.idea/
+*.swp
+~*
+.vscode
