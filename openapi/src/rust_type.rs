@@ -345,7 +345,7 @@ impl Container {
     }
 }
 
-/// Either a Rust defined scalar type, or a type predefined in `stripe_types`.
+/// Either a Rust defined scalar type, or a type predefined in `PAYJP_TYPES`.
 #[derive(Copy, Clone, Eq, PartialEq, Hash)]
 pub enum SimpleType {
     /// bool
@@ -358,7 +358,7 @@ pub enum SimpleType {
     String,
     /// One of primitive rust integer types.
     Int(IntType),
-    /// Type defined in `stripe_types`.
+    /// Type defined in `PAYJP_TYPES`.
     Ext(ExtType),
 }
 
@@ -386,7 +386,7 @@ impl SimpleType {
     }
 
     /// Identifier we'll use when this type is part of an enum, e.g.
-    /// `Timestamp(stripe_types::Timestamp)`
+    /// `Timestamp(PAYJP_TYPES::Timestamp)`
     pub const fn display_name(self) -> &'static str {
         match self {
             SimpleType::Ext(ext) => ext.display_name(),
@@ -440,10 +440,10 @@ pub enum ExtType {
 impl ExtType {
     pub const fn ident(self) -> &'static str {
         match self {
-            Self::Currency => "stripe_types::Currency",
-            Self::RangeQueryTs => "stripe_types::RangeQueryTs",
-            Self::Timestamp => "stripe_types::Timestamp",
-            Self::AlwaysTrue => "stripe_types::AlwaysTrue",
+            Self::Currency => "payjp_types::Currency",
+            Self::RangeQueryTs => "payjp_types::RangeQueryTs",
+            Self::Timestamp => "payjp_types::Timestamp",
+            Self::AlwaysTrue => "payjp_types::AlwaysTrue",
             Self::Value => "miniserde::json::Value",
         }
     }

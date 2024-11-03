@@ -12,14 +12,12 @@ mod requests;
 mod rust_object;
 mod rust_type;
 pub mod spec;
-pub mod spec_fetch;
 mod spec_inference;
-mod stripe_object;
+mod resource_object;
 mod templates;
 mod types;
-pub mod url_finder;
 pub mod utils;
 mod visitor;
-mod webhook;
+pub mod args;
 
-pub const STRIPE_TYPES: &str = "stripe_types";
+pub const PAYJP_TYPES: &str = "payjp_types";

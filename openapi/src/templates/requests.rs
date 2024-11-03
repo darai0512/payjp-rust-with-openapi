@@ -6,7 +6,7 @@ use crate::components::Components;
 use crate::printable::{Lifetime, PrintableType, PrintableWithLifetime};
 use crate::rust_object::{ObjectUsage, Struct, StructField, Visibility};
 use crate::rust_type::{Container, RustType};
-use crate::stripe_object::{OperationType, RequestSpec};
+use crate::resource_object::{OperationType, RequestSpec};
 use crate::templates::utils::{write_default_impl, write_doc_comment};
 use crate::templates::ObjectWriter;
 

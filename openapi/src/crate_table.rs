@@ -2,8 +2,9 @@ use tabled::settings::Style;
 use tabled::{Table, Tabled};
 
 use crate::components::Components;
-use crate::stripe_object::StripeObject;
+use crate::resource_object::StripeObject;
 use crate::utils::write_to_file;
+use crate::args::args;
 
 /// Write a table describing where all generated requests live
 pub fn write_crate_table(components: &Components) -> anyhow::Result<()> {
@@ -39,9 +40,5 @@ pub fn write_crate_table(components: &Components) -> anyhow::Result<()> {
 
 fn name_cell(obj: &StripeObject) -> String {
     let ident = obj.ident();
-    if let Some(doc_url) = &obj.stripe_doc_url {
-        format!("[{ident}]({doc_url})")
-    } else {
-        ident.to_string()
-    }
+    format!("[{ident}]({})", args.api_docs_url)
 }

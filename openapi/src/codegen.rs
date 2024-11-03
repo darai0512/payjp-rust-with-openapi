@@ -1,7 +1,6 @@
 use std::fmt::Write as _;
 use std::path::PathBuf;
 
-use anyhow::Context;
 use indoc::formatdoc;
 
 use crate::components::{get_components, Components};
@@ -11,12 +10,10 @@ use crate::object_writing::{gen_obj, gen_requests};
 use crate::rust_object::{ObjectKind, ObjectMetadata};
 use crate::spec::Spec;
 use crate::spec_inference::infer_doc_comment;
-use crate::stripe_object::StripeObject;
+use crate::resource_object::StripeObject;
 use crate::templates::cargo_toml::gen_crate_toml;
 use crate::templates::utils::write_top_level_doc_comment;
-use crate::url_finder::UrlFinder;
 use crate::utils::{append_to_file, write_to_file};
-use crate::webhook::write_generated_for_webhooks;
 
 pub struct CodeGen {
     pub components: Components,
@@ -24,15 +21,8 @@ pub struct CodeGen {
 }
 
 impl CodeGen {
-    pub fn new(spec: Spec, url_finder: UrlFinder) -> anyhow::Result<Self> {
-        let mut components = get_components(&spec)?;
-
-        // Attach doc urls for top-level components
-        for comp in components.components.values_mut() {
-            if let Some(doc_url) = url_finder.url_for_object(comp.path()) {
-                comp.stripe_doc_url = Some(doc_url);
-            }
-        }
+    pub fn new(spec: Spec) -> anyhow::Result<Self> {
+        let components = get_components(&spec)?;
 
         Ok(Self { components, spec })
     }
@@ -77,8 +67,6 @@ impl CodeGen {
         self.write_crate_base()?;
         self.write_components()?;
         self.write_api_version_file()?;
-        write_generated_for_webhooks(&self.components)
-            .context("Could not write webhook generated code")?;
         write_crate_table(&self.components)?;
         self.write_object_info_for_testing()
     }
@@ -213,7 +201,7 @@ impl CodeGen {
     fn gen_struct_definitions_for_component(&self, comp: &StripeObject) -> String {
         let base_obj = comp.rust_obj();
         let schema = self.spec.get_component_schema(comp.path());
-        let doc_comment = infer_doc_comment(schema, comp.stripe_doc_url.as_deref());
+        let doc_comment = infer_doc_comment(schema);
         let meta = ObjectMetadata::new(comp.ident().clone()).doc(doc_comment);
 
         gen_obj(base_obj, &meta, comp, &self.components)

@@ -54,7 +54,6 @@ pub struct StripeObject {
     pub resource: StripeResource,
     pub data: StripeObjectData,
     pub krate: Option<CrateInfo>,
-    pub stripe_doc_url: Option<String>,
     pub deduplicated_objects: IndexMap<RustIdent, DeduppedObject>,
 }
 

@@ -4,7 +4,7 @@ use tracing::debug;
 
 use crate::rust_object::{ObjectKind, ObjectMetadata, ObjectUsage, RustObject};
 use crate::rust_type::{PathToType, RustType};
-use crate::stripe_object::StripeObject;
+use crate::resource_object::StripeObject;
 use crate::types::{ComponentPath, RustIdent};
 use crate::visitor::{Visit, VisitMut};
 

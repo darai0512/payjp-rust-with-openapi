@@ -4,17 +4,18 @@ members = [
     "tests",
     "generated/*",
     "examples/*",
-    "openapi/out/crates/*",
+    "openapi/out2/crates/*",
     "async-payjp-client-core",
     "async-payjp",
 ]
 
 # Skip "examples/*" when running default commands since that adds a bunch of deps that makes
 # development feedback loop slower.
-default-members = ["async-payjp", "async-payjp-types", "async-payjp-client-core", "generated/*", "openapi/out/crates/*"]
+default-members = ["async-payjp", "async-payjp-types", "async-payjp-client-core", "generated/*", "openapi/out2/crates/*"]
 resolver = "2"
 # Makes dependency management simpler to allow codegen crate to use whichever dep versions
 # it wants without affecting dependency resolution of the user-facing library crates
+exclude = ["openapi"]
 
 [workspace.package]
 version = "0.0.1"

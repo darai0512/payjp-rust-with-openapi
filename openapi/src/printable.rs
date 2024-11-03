@@ -3,7 +3,7 @@ use std::fmt::{Display, Formatter, Write};
 use crate::components::PathInfo;
 use crate::rust_type::{MapKey, SimpleType};
 use crate::types::RustIdent;
-use crate::STRIPE_TYPES;
+use crate::PAYJP_TYPES;
 
 /// A `RustType` we can implement `Display` for. This requires converting the portions of `RustType`
 /// we do not know how to print into other variants. For example, `RustType::Object` must be converted
@@ -85,7 +85,7 @@ impl<'a> Display for PrintableWithLifetime<'a> {
                     if self.impl_into {
                         write!(f, "impl Into<")?;
                     }
-                    write!(f, "{STRIPE_TYPES}::List<{inner}>")?;
+                    write!(f, "{PAYJP_TYPES}::List<{inner}>")?;
                     if self.impl_into {
                         write!(f, ">")?;
                     }
@@ -96,7 +96,7 @@ impl<'a> Display for PrintableWithLifetime<'a> {
                     if self.impl_into {
                         write!(f, "impl Into<")?;
                     }
-                    write!(f, "{STRIPE_TYPES}::SearchList<{inner}>")?;
+                    write!(f, "{PAYJP_TYPES}::SearchList<{inner}>")?;
                     if self.impl_into {
                         write!(f, ">")?;
                     }
@@ -119,7 +119,7 @@ impl<'a> Display for PrintableWithLifetime<'a> {
                 }
                 Expandable(inner) => {
                     let inner = PrintableWithLifetime::new(inner, Some(lifetime));
-                    write!(f, "{STRIPE_TYPES}::Expandable<{inner}>")
+                    write!(f, "{PAYJP_TYPES}::Expandable<{inner}>")
                 }
                 Option(inner) => {
                     let inner = PrintableWithLifetime::new(inner, Some(lifetime));
@@ -181,10 +181,10 @@ impl Display for PrintableType {
             }
             Container(typ) => match typ {
                 List(inner) => {
-                    write!(f, "{STRIPE_TYPES}::List<{inner}>")
+                    write!(f, "{PAYJP_TYPES}::List<{inner}>")
                 }
                 SearchList(inner) => {
-                    write!(f, "{STRIPE_TYPES}::SearchList<{inner}>")
+                    write!(f, "{PAYJP_TYPES}::SearchList<{inner}>")
                 }
                 Vec(inner) => {
                     write!(f, "Vec<{inner}>")
@@ -193,7 +193,7 @@ impl Display for PrintableType {
                     write!(f, "&[{inner}]")
                 }
                 Expandable(inner) => {
-                    write!(f, "{STRIPE_TYPES}::Expandable<{inner}>")
+                    write!(f, "{PAYJP_TYPES}::Expandable<{inner}>")
                 }
                 Option(inner) => {
                     write!(f, "Option<{inner}>")

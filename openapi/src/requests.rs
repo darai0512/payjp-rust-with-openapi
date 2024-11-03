@@ -9,7 +9,7 @@ use crate::rust_object::{ObjectMetadata, RustObject, Struct, Visibility};
 use crate::rust_type::{RustType, SimpleType};
 use crate::spec::{get_ok_response_schema, get_request_form_parameters, Spec};
 use crate::spec_inference::Inference;
-use crate::stripe_object::{OperationType, PathParam, RequestParam, RequestSpec, StripeOperation};
+use crate::resource_object::{OperationType, PathParam, RequestParam, RequestSpec, StripeOperation};
 use crate::types::{ComponentPath, RustIdent};
 
 /// Should we skip a currently unsupported request?
@@ -328,9 +328,7 @@ fn infer_id_path(
 }
 
 fn unpluralize(val: &str) -> String {
-    // A simple transformation covers the two cases we see in stripe request paths:
-
-    // treasury_entries -> treasury_entry
+    // ex, treasury_entries -> treasury_entry
     if val.ends_with("ies") {
         val.replace("ies", "y")
     } else {

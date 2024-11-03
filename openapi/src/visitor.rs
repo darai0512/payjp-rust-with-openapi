@@ -1,6 +1,6 @@
 use crate::rust_object::{ObjectMetadata, ObjectUsage, RustObject};
 use crate::rust_type::RustType;
-use crate::stripe_object::{RequestSpec, StripeObject};
+use crate::resource_object::{RequestSpec, StripeObject};
 
 pub trait Visit<'a> {
     fn visit_obj(

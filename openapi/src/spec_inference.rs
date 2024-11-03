@@ -16,6 +16,7 @@ use crate::spec::{
     as_data_array_item, as_object_enum_name, is_enum_with_just_empty_string, ExpansionResources,
 };
 use crate::types::{ComponentPath, RustIdent};
+use crate::args::args;
 
 #[derive(Copy, Clone, Debug)]
 pub struct Inference<'a> {
@@ -130,7 +131,7 @@ impl<'a> Inference<'a> {
     }
 
     fn infer_bool_type(&self) -> RustType {
-        // NB: stripe actually includes an `enum` field with only `true` as a more reliable
+        // NB: actually includes an `enum` field with only `true` as a more reliable
         // way to detect this case, but that is not exposed by the `openapi` crate
         let Some(desc) = self.description else {
             return RustType::bool();
@@ -452,19 +453,17 @@ fn infer_enum_variant_name(schema: &Schema) -> Option<&str> {
 }
 
 /// Try to generate the best doc comment we can using the information provided. `doc_url`
-/// is the source for more info, currently provided by `UrlFinder`.
-pub fn infer_doc_comment(schema: &Schema, doc_url: Option<&str>) -> String {
+/// is the source for more info.
+pub fn infer_doc_comment(schema: &Schema) -> String {
     let mut doc_comment = if let Some(descr) = &schema.schema_data.description {
         descr.clone()
     } else if let Some(title) = &schema.schema_data.title {
-        format!("The resource representing a Stripe {title}")
+        format!("The resource representing a Payjp {title}")
     } else {
         // This case is rare, but possible
         String::new()
     };
-    if let Some(doc) = doc_url {
-        let _ = writeln!(doc_comment, "\n\nFor more details see <{doc}>.");
-    }
+    let _ = writeln!(doc_comment, "\n\nFor more details see <{}>.", args.api_docs_url);
     doc_comment
 }
 

@@ -15,13 +15,12 @@ use crate::requests::parse_requests;
 use crate::rust_object::{ObjectKind, ObjectUsage, RustObject};
 use crate::rust_type::{Container, PathToType, RustType};
 use crate::spec::Spec;
-use crate::stripe_object::{
+use crate::resource_object::{
     parse_stripe_schema_as_rust_object, CrateInfo, OperationType, RequestSpec, StripeObject,
     StripeOperation, StripeResource,
 };
 use crate::types::{ComponentPath, RustIdent};
 use crate::visitor::Visit;
-use crate::webhook::WebhookObject;
 
 #[derive(Clone, Debug)]
 pub struct TypeSpec {
@@ -34,7 +33,6 @@ pub struct TypeSpec {
 
 pub struct Components {
     pub components: IndexMap<ComponentPath, StripeObject>,
-    pub webhook_objs: Vec<WebhookObject>,
     pub extra_types: IndexMap<RustIdent, TypeSpec>,
 }
 
@@ -156,14 +154,6 @@ impl Components {
         }
     }
 
-    pub fn deps_for_webhooks(&self) -> IndexSet<&ComponentPath> {
-        let mut dep_collector = DependencyCollector::new();
-        for obj in &self.webhook_objs {
-            dep_collector.visit_typ(&obj.typ, ObjectUsage::type_def());
-        }
-        dep_collector.deps
-    }
-
     pub fn deps_for_component<'a>(
         &'a self,
         path: &'a ComponentPath,
@@ -177,12 +167,11 @@ impl Components {
     pub fn filter_unused_components(&mut self) {
         loop {
             let mut unused = vec![];
-            let webhook_deps = self.deps_for_webhooks();
             let graph = self.gen_component_dep_graph();
             for (path, component) in &self.components {
                 // The `error` component is a false positive since we don't include the error
                 // type in dependency calculations, but every requests depends on `error`
-                if path.as_ref() == "error" || webhook_deps.contains(path) {
+                if path.as_ref() == "error" {
                     continue;
                 }
 
@@ -226,7 +215,7 @@ impl Components {
 
     #[tracing::instrument(level = "debug", skip(self))]
     fn apply_overrides(&mut self) -> anyhow::Result<()> {
-        let mut overrides = Overrides::new(self)?;
+        let mut overrides = Overrides::new()?;
         for comp in self.components.values_mut() {
             comp.visit_mut(&mut overrides);
         }
@@ -259,7 +248,6 @@ impl Components {
 
 #[tracing::instrument(skip_all)]
 pub fn get_components(spec: &Spec) -> anyhow::Result<Components> {
-    let mut webhook_objs = vec![];
     let mut components = IndexMap::with_capacity(spec.component_schemas().len());
 
     let mut resource_map = HashMap::new();
@@ -268,11 +256,6 @@ pub fn get_components(spec: &Spec) -> anyhow::Result<Components> {
     for path in spec.component_schemas().keys() {
         let path = ComponentPath::new(path.clone());
         let schema = spec.get_component_schema(&path);
-
-        if let Some(webhook_object) = WebhookObject::from_schema(schema)? {
-            webhook_objs.push(webhook_object);
-            continue;
-        };
 
         let stripe_resource = StripeResource::from_schema(schema, path.clone())?;
         let data = parse_stripe_schema_as_rust_object(schema, &path, stripe_resource.ident());
@@ -321,20 +304,19 @@ pub fn get_components(spec: &Spec) -> anyhow::Result<Components> {
                 resource: resource.clone(),
                 data,
                 krate: inferred_crate,
-                stripe_doc_url: None,
                 deduplicated_objects: IndexMap::default(),
             },
         );
     }
 
-    let mut components = Components { components, webhook_objs, extra_types: Default::default() };
+    let mut components = Components { components, extra_types: Default::default() };
     components.filter_unused_components();
 
     validate_crate_info(&components)?;
     components.infer_all_crate_assignments()?;
     info!("Finished inferring crates");
 
-    // components.apply_overrides()?;
+    components.apply_overrides()?;
     debug!("Finished applying overrides");
 
     components.run_deduplication_pass();

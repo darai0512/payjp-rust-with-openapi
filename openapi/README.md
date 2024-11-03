@@ -6,6 +6,8 @@ The `openapi` crates handles code generation without cyclic dependencies.
 https://pay.jp/docs/api -> 難しい
 - nullable
 
+webhookはいらないがEventObjectのenum生成は欲しいかも？通常のenum生成でもいいので一旦消す
+
 ## Running the Binary
 The main arguments of interest will be 
 

@@ -11,4 +11,4 @@ futures-util = "0.3.28"
 tokio = { version = "1.24.1", features = ["rt-multi-thread", "macros"] }
 async-payjp = { path = "../../async-payjp" }
 async-payjp-core = { path = "../../generated/async-payjp-core", features = ["customer"] }
-pay = { path = "../../openapi/out/crates/async-stripe-core", features = ["term"] }
+pay = { path = "../../openapi/out2/crates/async-stripe-core", features = ["term"] }

@@ -46,14 +46,14 @@ impl Components {
                 let comp_deps = self.deps_for_component(member);
                 deps.extend(comp_deps);
             }
-            for dep in deps {
-                //let dependent_crate = self.get(dep).krate_unwrapped().for_types();
-                // Don't clutter with self edges since they aren't particularly meaningful
-                // in this context
-                //if dependent_crate != *krate {
-                //    graph.add_edge(*krate, dependent_crate, ());
-                //}
-            }
+            // for dep in deps {
+            //     let dependent_crate = self.get(dep).krate_unwrapped().for_types();
+            //     // Don't clutter with self edges since they aren't particularly meaningful
+            //     // in this context
+            //     if dependent_crate != *krate {
+            //         graph.add_edge(*krate, dependent_crate, ());
+            //     }
+            // }
         }
         graph
     }

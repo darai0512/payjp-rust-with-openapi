@@ -5,11 +5,11 @@ use crate::printable::Lifetime;
 use crate::rust_object::EnumOfObjects::ObjectUnion;
 use crate::rust_object::{as_enum_of_objects, ObjectMetadata, ObjectUsage, RustObject};
 use crate::rust_type::RustType;
-use crate::stripe_object::{RequestSpec, StripeObject};
+use crate::resource_object::{RequestSpec, StripeObject};
 use crate::templates::object_trait::{write_object_trait, write_object_trait_for_enum};
 use crate::templates::utils::write_doc_comment;
 use crate::templates::ObjectWriter;
-use crate::STRIPE_TYPES;
+use crate::PAYJP_TYPES;
 
 const ADD_UNKNOWN_VARIANT_THRESHOLD: usize = 12;
 
@@ -95,10 +95,10 @@ pub fn gen_obj(
             RustObject::Struct(_) => write_object_trait(&mut out, ident, &id_type),
             RustObject::Enum(variants) => {
                 let Some(object_names) = as_enum_of_objects(components, variants) else {
-                    panic!("Object {} is an enum that is not a union of stripe objects", ident);
+                    panic!("Object {} is an enum that is not a union of objects", ident);
                 };
                 let ObjectUnion(objects) = object_names else {
-                    panic!("Object {} is an enum that is not a union of stripe objects", ident);
+                    panic!("Object {} is an enum that is not a union of objects", ident);
                 };
                 write_object_trait_for_enum(&mut out, ident, &objects)
             }
@@ -113,7 +113,7 @@ pub fn gen_obj(
             // uses that same id
             if path == comp.path() {
                 let id_ident = comp.id_type_ident();
-                let _ = writeln!(out, "{STRIPE_TYPES}::def_id!({id_ident});");
+                let _ = writeln!(out, "{PAYJP_TYPES}::def_id!({id_ident});");
             }
         }
     }

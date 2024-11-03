@@ -4,7 +4,7 @@ use openapiv3::{
     SchemaKind, StatusCode, Type,
 };
 
-use crate::stripe_object::OperationType;
+use crate::resource_object::OperationType;
 use crate::types::ComponentPath;
 
 #[derive(Debug, Clone)]
@@ -38,7 +38,7 @@ impl Spec {
     }
 
     pub fn get_request_operation(&self, path: &str, op: OperationType) -> Option<&Operation> {
-        let item = self.get_request(path)?.as_item().expect("Expected Stripe requests to be items");
+        let item = self.get_request(path)?.as_item().expect("Expected requests to be items");
         let operation = match op {
             OperationType::Get => &item.get,
             OperationType::Post => &item.post,

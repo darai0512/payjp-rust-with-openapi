@@ -6,13 +6,13 @@ use indoc::writedoc;
 use crate::printable::PrintableType;
 use crate::rust_object::ObjectRef;
 use crate::types::RustIdent;
-use crate::STRIPE_TYPES;
+use crate::PAYJP_TYPES;
 
 pub fn write_object_trait(out: &mut String, ident: &RustIdent, id_type: &PrintableType) {
     let _ = writedoc!(
         out,
         r#"
-            impl {STRIPE_TYPES}::Object for {ident} {{
+            impl {PAYJP_TYPES}::Object for {ident} {{
                 type Id = {id_type};
                 fn id(&self) -> &Self::Id {{
                     &self.id
@@ -41,7 +41,7 @@ pub fn write_object_trait_for_enum(
     let _ = writedoc!(
         out,
         r#"
-            impl {STRIPE_TYPES}::Object for {ident} {{
+            impl {PAYJP_TYPES}::Object for {ident} {{
                 type Id = smol_str::SmolStr;
                 fn id(&self) -> &Self::Id {{
                     match self {{
