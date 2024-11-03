@@ -32,10 +32,14 @@ impl RequestSpec {
 
         let return_type = components.construct_printable_type(&self.returned);
         let mut paginate_str = String::new();
-        if let Some(pagination_kind) = as_pagination_kind(&self.returned) {
+
+        let is_pagination = match &self.returned {
+            RustType::Container(Container::List(_)) => true,
+            _ => false,
+        };
+        if is_pagination {
             self.gen_paginate(
                 components.construct_printable_type(&self.returned),
-                pagination_kind,
                 &mut paginate_str,
             )
         }
@@ -106,13 +110,8 @@ impl RequestSpec {
         )
     }
 
-    fn gen_paginate(&self, pagination_typ: PrintableType, kind: PaginationKind, out: &mut String) {
+    fn gen_paginate(&self, pagination_typ: PrintableType, out: &mut String) {
         let path = self.gen_path_arg();
-
-        let paginate_method_name = match kind {
-            PaginationKind::List => "new_list",
-            PaginationKind::Search => "new_search_list",
-        };
 
         let build_inner = self.gen_path_param_assignments();
 
@@ -121,7 +120,7 @@ impl RequestSpec {
             r#"
         pub fn paginate(&self) -> stripe_client_core::ListPaginator<{pagination_typ}> {{
             {build_inner}
-            stripe_client_core::ListPaginator::{paginate_method_name}({path}, &self.inner)
+            stripe_client_core::ListPaginator::new_list({path}, &self.inner)
         }}
         "#
         );
@@ -252,21 +251,5 @@ impl RequestSpec {
             write_default_impl(name, lifetime_str, &mut out);
         }
         out
-    }
-}
-
-#[derive(Copy, Clone)]
-enum PaginationKind {
-    /// List<T>
-    List,
-    /// Search<T>
-    Search,
-}
-
-fn as_pagination_kind(typ: &RustType) -> Option<PaginationKind> {
-    match typ {
-        RustType::Container(Container::List(_)) => Some(PaginationKind::List),
-        RustType::Container(Container::SearchList(_)) => Some(PaginationKind::Search),
-        _ => None,
     }
 }

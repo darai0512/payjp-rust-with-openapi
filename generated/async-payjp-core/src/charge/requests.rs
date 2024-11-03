@@ -232,32 +232,8 @@ impl SearchCharge {
         self
     }
 }
-impl SearchCharge {
-    /// Send the request and return the deserialized response.
-    pub async fn send<C: StripeClient>(
-        &self,
-        client: &C,
-    ) -> Result<<Self as StripeRequest>::Output, C::Err> {
-        self.customize().send(client).await
-    }
-
-    /// Send the request and return the deserialized response, blocking until completion.
-    pub fn send_blocking<C: StripeBlockingClient>(
-        &self,
-        client: &C,
-    ) -> Result<<Self as StripeRequest>::Output, C::Err> {
-        self.customize().send_blocking(client)
-    }
-
-    pub fn paginate(
-        &self,
-    ) -> payjp_client_core::ListPaginator<stripe_types::SearchList<stripe_shared::Charge>> {
-        payjp_client_core::ListPaginator::new_search_list("/charges/search", &self.inner)
-    }
-}
 
 impl StripeRequest for SearchCharge {
-    type Output = stripe_types::SearchList<stripe_shared::Charge>;
 
     fn build(&self) -> RequestBuilder {
         RequestBuilder::new(StripeMethod::Get, "/charges/search").query(&self.inner)

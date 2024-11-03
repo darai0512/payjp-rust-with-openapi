@@ -1,9 +1,7 @@
-use std::collections::HashMap;
 use std::path::PathBuf;
 
 use heck::ToSnakeCase;
 use indexmap::IndexMap;
-use lazy_static::lazy_static;
 use openapiv3::Schema;
 use serde::{Deserialize, Serialize};
 
@@ -294,13 +292,7 @@ impl StripeResource {
 
 impl StripeResource {
     pub fn from_schema(schema: &Schema, path: ComponentPath) -> anyhow::Result<Self> {
-        // todo
-        let resource =
-            if let Some(stripe_resource) = schema.schema_data.extensions.get("x-stripeResource") {
-                serde_json::from_value(stripe_resource.clone())?
-            } else {
-                BaseResource::default()
-            };
+        let resource = BaseResource::default();
         let mut in_package = None;
         if let Some(package) = resource.in_package {
             if !package.is_empty() {
@@ -308,29 +300,13 @@ impl StripeResource {
             }
         }
 
-        let ident = infer_object_ident(&path);
-        let requests = if let Some(val) = schema.schema_data.extensions.get("x-stripeOperations") {
+        let ident = RustIdent::create(&path);
+        let requests = if let Some(val) = schema.schema_data.extensions.get("x-payjpOperations") {
             serde_json::from_value(val.clone())?
         } else {
             vec![]
         };
         Ok(Self { base_ident: ident, in_package, requests, path })
-    }
-}
-
-fn infer_object_ident(path: &ComponentPath) -> RustIdent {
-    lazy_static! {
-        static ref OBJECT_RENAMES: HashMap<&'static str, &'static str> = HashMap::from([
-            ("invoiceitem", "invoice_item"),
-            ("item", "checkout_session_item"),
-            ("line_item", "invoice_line_item"),
-            ("fee_refund", "application_fee_refund"),
-        ]);
-    }
-    if let Some(renamed) = OBJECT_RENAMES.get(path.as_ref()) {
-        RustIdent::create(renamed)
-    } else {
-        RustIdent::create(path)
     }
 }
 

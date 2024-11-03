@@ -67,11 +67,9 @@ pub fn cons_cus_id(id: usize) -> String {
     format!("cus_{id}")
 }
 
-/// Are we testing `List<T>` or `SearchList<T>`?
 #[derive(Copy, Clone, Debug)]
 pub enum PaginationMockKind {
     List,
-    Search,
 }
 
 impl PaginationMockKind {

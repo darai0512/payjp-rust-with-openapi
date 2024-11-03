@@ -139,7 +139,6 @@ impl Components {
                 let inner = Box::new(self.construct_printable_type(typ.value_typ()));
                 let printable = match typ {
                     Container::List(_) => PrintableContainer::List(inner),
-                    Container::SearchList(_) => PrintableContainer::SearchList(inner),
                     Container::Vec(_) => PrintableContainer::Vec(inner),
                     Container::Slice(_) => PrintableContainer::Slice(inner),
                     Container::Expandable(_) => PrintableContainer::Expandable(inner),

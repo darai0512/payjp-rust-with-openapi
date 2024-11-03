@@ -27,7 +27,6 @@ pub enum PrintableType {
 #[derive(Debug, Clone, Eq, PartialEq, Hash)]
 pub enum PrintableContainer {
     List(Box<PrintableType>),
-    SearchList(Box<PrintableType>),
     Vec(Box<PrintableType>),
     Slice(Box<PrintableType>),
     Expandable(Box<PrintableType>),
@@ -86,17 +85,6 @@ impl<'a> Display for PrintableWithLifetime<'a> {
                         write!(f, "impl Into<")?;
                     }
                     write!(f, "{PAYJP_TYPES}::List<{inner}>")?;
-                    if self.impl_into {
-                        write!(f, ">")?;
-                    }
-                    Ok(())
-                }
-                SearchList(inner) => {
-                    let inner = PrintableWithLifetime::new(inner, Some(lifetime));
-                    if self.impl_into {
-                        write!(f, "impl Into<")?;
-                    }
-                    write!(f, "{PAYJP_TYPES}::SearchList<{inner}>")?;
                     if self.impl_into {
                         write!(f, ">")?;
                     }
@@ -182,9 +170,6 @@ impl Display for PrintableType {
             Container(typ) => match typ {
                 List(inner) => {
                     write!(f, "{PAYJP_TYPES}::List<{inner}>")
-                }
-                SearchList(inner) => {
-                    write!(f, "{PAYJP_TYPES}::SearchList<{inner}>")
                 }
                 Vec(inner) => {
                     write!(f, "Vec<{inner}>")

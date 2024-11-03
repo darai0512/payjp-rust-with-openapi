@@ -98,10 +98,6 @@ impl RustType {
         Self::Container(Container::List(Box::new(typ)))
     }
 
-    pub fn search_list(typ: Self) -> Self {
-        Self::Container(Container::SearchList(Box::new(typ)))
-    }
-
     /// Construct an `Expandable<{typ}>`.
     pub fn expandable(typ: Self) -> Self {
         Self::Container(Container::Expandable(Box::new(typ)))
@@ -164,7 +160,7 @@ impl RustType {
             Self::Simple(typ) => typ.is_copy(),
             Self::Path { path, is_ref } => *is_ref || path.is_copy(components),
             Self::Container(typ) => match typ {
-                List(_) | Vec(_) | Expandable(_) | SearchList(_) => false,
+                List(_) | Vec(_) | Expandable(_) => false,
                 Slice(_) => true,
                 Option(inner) | Box(inner) => inner.is_copy(components),
                 Map { is_ref, .. } => *is_ref,
@@ -290,8 +286,6 @@ impl Display for MapKey {
 pub enum Container {
     /// List<{typ}>
     List(Box<RustType>),
-    /// SearchList<{typ}>
-    SearchList(Box<RustType>),
     /// Vec<{typ}>
     Vec(Box<RustType>),
     /// &[{typ}]
@@ -319,7 +313,6 @@ impl Container {
         use Container::*;
         match self {
             List(typ) => typ,
-            SearchList(typ) => typ,
             Vec(typ) => typ,
             Slice(typ) => typ,
             Expandable(typ) => typ,
@@ -334,7 +327,6 @@ impl Container {
         use Container::*;
         match self {
             List(typ) => typ,
-            SearchList(typ) => typ,
             Vec(typ) => typ,
             Slice(typ) => typ,
             Expandable(typ) => typ,

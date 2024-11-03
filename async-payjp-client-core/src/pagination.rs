@@ -5,14 +5,14 @@ use stripe_types::{AsCursorOpt, List, Object, };
 
 use crate::{RequestBuilder, StripeBlockingClient, StripeClient, StripeMethod};
 
-/// A trait allowing `List<T>` and `SearchList<T>` to be treated the same. Not part of the
+/// A trait allowing `List<T>` to be treated the same. Not part of the
 /// public API.
 ///
-/// NB: this trait is designed specifically for `List` and `SearchList` and may not be sensible
+/// NB: this trait is designed specifically for `List` and may not be sensible
 /// in other cases. One gotcha is that `into_parts` and `from_parts` do not necessarily
-/// round-trip, e.g. `SearchList<T>` will lose the `next_page` field since that
+/// round-trip, e.g. `List<T>` will lose the `next_page` field since that
 /// is not part of the shared list impl. We account for this by ensuring to call `update_params`
-/// before breaking the `SearchList` into pieces.
+/// before breaking the `List` into pieces.
 #[doc(hidden)]
 pub trait PaginableList: Deserialize {
     /// Underlying single element type, e.g. `Account`
