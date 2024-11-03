@@ -27,22 +27,6 @@ impl CodeGen {
         Ok(Self { components, spec })
     }
 
-    fn write_api_version_file(&self) -> anyhow::Result<()> {
-        let base_path = Crate::SHARED.get_path();
-        let mut mod_rs_contents = String::new();
-        let mod_rs_path = base_path.join("mod.rs");
-
-        // Write the current API version
-        let version_file_content = format!(
-            "pub const VERSION: crate::ApiVersion = crate::ApiVersion::V{};",
-            self.spec.version().replace('-', "_")
-        );
-        write_to_file(version_file_content, base_path.join("version.rs"))?;
-        let _ = writeln!(mod_rs_contents, "pub mod version;");
-
-        append_to_file(mod_rs_contents, mod_rs_path)
-    }
-
     fn write_components(&self) -> anyhow::Result<()> {
         for component in self.components.components.values() {
             self.write_component(component)?;
@@ -66,7 +50,6 @@ impl CodeGen {
     pub fn write_files(&self) -> anyhow::Result<()> {
         self.write_crate_base()?;
         self.write_components()?;
-        self.write_api_version_file()?;
         write_crate_table(&self.components)?;
         self.write_object_info_for_testing()
     }
