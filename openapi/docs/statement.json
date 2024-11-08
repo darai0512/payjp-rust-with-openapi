@@ -6,22 +6,22 @@
     "description": "PAY.JP Statement API specification in OpenAPI 3.0"
   },
   "paths": {
-    "/statements/{id}": {
+    "/statements/{statement}": {
+      "parameters": [
+        {
+          "name": "statement",
+          "in": "path",
+          "description": "オブジェクトのユニークID",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "example": "st_178fd25dc7ab7b75906f5d4c4b0e6"
+          }
+        }
+      ],
       "get": {
         "summary": "取引明細を取得",
         "description": "取引明細を取得します。",
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "description": "オブジェクトのユニークID",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "example": "st_178fd25dc7ab7b75906f5d4c4b0e6"
-            }
-          }
-        ],
         "responses": {
           "200": {
             "description": "指定したidのstatementオブジェクト",
@@ -38,7 +38,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/error"
+                  "$ref": "./errors.json#/components/schemas/error"
                 }
               }
             }
@@ -46,22 +46,22 @@
         }
       }
     },
-    "/statements/{id}/statement_urls": {
+    "/statements/{statement}/statement_urls": {
+      "parameters": [
+        {
+          "name": "statement",
+          "in": "path",
+          "description": "オブジェクトのユニークID",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "example": "st_178fd25dc7ab7b75906f5d4c4b0e6"
+          }
+        }
+      ],
       "post": {
         "summary": "取引明細ダウンロードURLを発行",
         "description": "取引明細およびインボイスをダウンロードできる一時URLを発行します。",
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "description": "オブジェクトのユニークID",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "example": "st_178fd25dc7ab7b75906f5d4c4b0e6"
-            }
-          }
-        ],
         "requestBody": {
           "content": {
             "application/x-www-form-urlencoded": {
@@ -87,7 +87,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/error"
+                  "$ref": "./errors.json#/components/schemas/error"
                 }
               }
             }
@@ -100,45 +100,10 @@
         "summary": "取引明細リストを取得",
         "description": "取引明細リストを取得します。",
         "parameters": [
-          {
-            "name": "limit",
-            "in": "query",
-            "description": "取得するデータ数の最大値(1~100まで)。指定がない場合は 10 となる。",
-            "schema": {
-              "type": "integer",
-              "default": 10,
-              "minimum": 1,
-              "maximum": 100
-            }
-          },
-          {
-            "name": "offset",
-            "in": "query",
-            "description": "基準点からのデータ取得を行う開始位置。指定がない場合は 0 となる。",
-            "schema": {
-              "type": "integer",
-              "default": 0,
-              "minimum": 0
-            }
-          },
-          {
-            "name": "since",
-            "in": "query",
-            "description": "指定したタイムスタンプ以降に作成されたデータのみ取得",
-            "schema": {
-              "type": "integer",
-              "format": "int64"
-            }
-          },
-          {
-            "name": "until",
-            "in": "query",
-            "description": "指定したタイムスタンプ以前に作成されたデータのみ取得",
-            "schema": {
-              "type": "integer",
-              "format": "int64"
-            }
-          },
+          {"$ref": "./paginations.json#/components/parameters/limit"},
+          {"$ref": "./paginations.json#/components/parameters/offset"},
+          {"$ref": "./paginations.json#/components/parameters/since"},
+          {"$ref": "./paginations.json#/components/parameters/until"},
           {
             "name": "owner",
             "in": "query",
@@ -188,7 +153,18 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/statementList"
+                  "allOf": [
+                    {"$ref": "./paginations.json#/components/schemas/list"},
+                    {
+                      "properties": {
+                        "data": {
+                          "type": "array",
+                          "description": "オブジェクトの配列",
+                          "items": {"$ref": "#/components/schemas/statement"}
+                        }
+                      }
+                    }
+                  ]
                 }
               }
             }
@@ -198,7 +174,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/error"
+                  "$ref": "./errors.json#/components/schemas/error"
                 }
               }
             }
@@ -239,7 +215,7 @@
           "object": {
             "type": "string",
             "description": "\"statement\"の固定文字列",
-            "example": "statement"
+            "enum": ["statement"]
           },
           "id": {
             "type": "string",
@@ -256,18 +232,17 @@
             "description": "作成時刻のUTCタイムスタンプ"
           },
           "title": {
-            "type": ["string", "null"],
+            "type": "string", "nullable": true,
             "description": "取引明細のタイトル"
           },
           "tenant_id": {
-            "type": ["string", "null"],
+            "type": "string", "nullable": true,
             "description": "オブジェクトを所有するTenantのID"
           },
           "type": {
             "type": "string",
             "description": "取引明細の区分",
-            "enum": ["sales", "service_fee", "forfeit", "transfer_fee", "misc"],
-            "example": "sales"
+            "enum": ["sales", "service_fee", "forfeit", "transfer_fee", "misc"]
           },
           "net": {
             "type": "integer",
@@ -279,11 +254,11 @@
             "description": "更新時刻のUTCタイムスタンプ"
           },
           "term": {
-            "type": ["object", "null"],
+            "type": "object", "nullable": true,
             "description": "このStatementの生成元となったTermオブジェクト"
           },
           "balance_id": {
-            "type": ["string", "null"],
+            "type": "string", "nullable": true,
             "description": "このStatementが関連付けられているBalanceのID"
           },
           "items": {
@@ -303,7 +278,7 @@
           "object": {
             "type": "string",
             "description": "固定値 \"statement_url\"",
-            "example": "statement_url"
+            "enum": ["statement_url"]
           },
           "url": {
             "type": "string",
@@ -325,69 +300,6 @@
             "description": "`true`を指定するとプラットフォーム手数料に関する明細がダウンロードできるURLを発行します。"
           }
         }
-      },
-      "statementList": {
-        "type": "object",
-        "description": "statementオブジェクトのリスト",
-        "properties": {
-          "object": {
-            "type": "string",
-            "description": "固定値 'list'",
-            "example": "list"
-          },
-          "data": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/statement"
-            }
-          },
-          "has_more": {
-            "type": "boolean",
-            "description": "さらにデータが存在するかどうか"
-          },
-          "url": {
-            "type": "string",
-            "description": "APIエンドポイントのURL"
-          },
-          "count": {
-            "type": "integer",
-            "description": "取得されたオブジェクトの総数"
-          }
-        },
-        "required": ["object", "data"]
-      },
-      "error": {
-        "type": "object",
-        "description": "エラーオブジェクト",
-        "properties": {
-          "error": {
-            "type": "object",
-            "properties": {
-              "status": {
-                "type": "integer",
-                "description": "HTTPステータスコード"
-              },
-              "type": {
-                "type": "string",
-                "description": "エラーの種類"
-              },
-              "message": {
-                "type": "string",
-                "description": "エラーメッセージ"
-              },
-              "param": {
-                "type": ["string", "null"],
-                "description": "エラーに関連するパラメータ名"
-              },
-              "code": {
-                "type": ["string", "null"],
-                "description": "エラーコード"
-              }
-            },
-            "required": ["status", "type", "message"]
-          }
-        },
-        "required": ["error"]
       }
     }
   }

@@ -16,8 +16,8 @@ use crate::rust_object::{ObjectKind, ObjectUsage, RustObject};
 use crate::rust_type::{Container, PathToType, RustType};
 use crate::spec::Spec;
 use crate::resource_object::{
-    parse_stripe_schema_as_rust_object, CrateInfo, OperationType, RequestSpec, StripeObject,
-    StripeOperation, StripeResource,
+    parse_schema_as_rust_object, CrateInfo, OperationType, RequestSpec, StripeObject,
+    XOperation, XResource,
 };
 use crate::types::{ComponentPath, RustIdent};
 use crate::visitor::Visit;
@@ -141,7 +141,6 @@ impl Components {
                     Container::List(_) => PrintableContainer::List(inner),
                     Container::Vec(_) => PrintableContainer::Vec(inner),
                     Container::Slice(_) => PrintableContainer::Slice(inner),
-                    Container::Expandable(_) => PrintableContainer::Expandable(inner),
                     Container::Option(_) => PrintableContainer::Option(inner),
                     Container::Box(_) => PrintableContainer::Box(inner),
                     Container::Map { key, is_ref, .. } => {
@@ -149,7 +148,7 @@ impl Components {
                     }
                 };
                 PrintableType::Container(printable)
-            }
+            },
         }
     }
 
@@ -159,7 +158,7 @@ impl Components {
     ) -> IndexSet<&'a ComponentPath> {
         let mut dep_collector = DependencyCollector::new();
         let comp = self.get(path);
-        dep_collector.visit_stripe_object(comp);
+        dep_collector.visit_object(comp);
         dep_collector.deps
     }
 
@@ -256,8 +255,8 @@ pub fn get_components(spec: &Spec) -> anyhow::Result<Components> {
         let path = ComponentPath::new(path.clone());
         let schema = spec.get_component_schema(&path);
 
-        let stripe_resource = StripeResource::from_schema(schema, path.clone())?;
-        let data = parse_stripe_schema_as_rust_object(schema, &path, stripe_resource.ident());
+        let resource = XResource::from_schema(schema, path.clone())?;
+        let data = parse_schema_as_rust_object(schema, &path, resource.ident(), spec.is_openapi_v31());
         if let Some(obj_name) = &data.object_name {
             if let Some(id_typ) = data.id_type.as_ref().and_then(|t| t.as_id_or_opt_id_path()) {
                 // We will hit duplicate object names from e.g. `account` and `deleted_account`, but sanity check nothing
@@ -269,15 +268,15 @@ pub fn get_components(spec: &Spec) -> anyhow::Result<Components> {
                 }
             }
         }
-        resource_map.insert(path.clone(), stripe_resource);
+        resource_map.insert(path.clone(), resource);
         obj_map.insert(path, data);
     }
 
     for (path, data) in obj_map {
         let resource = resource_map.get(&path).unwrap();
         let schema = spec.get_component_schema(&path);
-        let stripe_reqs: Vec<StripeOperation> =
-            if let Some(val) = schema.schema_data.extensions.get("x-stripeOperations") {
+        let stripe_reqs: Vec<XOperation> =
+            if let Some(val) = schema.schema_data.extensions.get("x-operations") {
                 serde_json::from_value(val.clone())?
             } else {
                 vec![]

@@ -98,19 +98,9 @@ impl RustType {
         Self::Container(Container::List(Box::new(typ)))
     }
 
-    /// Construct an `Expandable<{typ}>`.
-    pub fn expandable(typ: Self) -> Self {
-        Self::Container(Container::Expandable(Box::new(typ)))
-    }
-
     /// Construct a `HashMap<String, {typ}>`.
     pub fn str_map(value: Self, is_ref: bool) -> Self {
-        Self::Container(Container::Map { key: MapKey::String, value: Box::new(value), is_ref })
-    }
-
-    /// Construct a `HashMap<Currency, {typ}>`.
-    pub fn currency_map(typ: Self, is_ref: bool) -> Self {
-        Self::Container(Container::Map { key: MapKey::Currency, value: Box::new(typ), is_ref })
+        Self::Container(Container::Map { key: "String", value: Box::new(value), is_ref })
     }
 
     /// Construct a `Vec<{typ}>`.
@@ -160,7 +150,7 @@ impl RustType {
             Self::Simple(typ) => typ.is_copy(),
             Self::Path { path, is_ref } => *is_ref || path.is_copy(components),
             Self::Container(typ) => match typ {
-                List(_) | Vec(_) | Expandable(_) => false,
+                List(_) | Vec(_) => false,
                 Slice(_) => true,
                 Option(inner) | Box(inner) => inner.is_copy(components),
                 Map { is_ref, .. } => *is_ref,
@@ -266,21 +256,6 @@ impl RustType {
     }
 }
 
-#[derive(Debug, Copy, Clone, Eq, PartialEq, Hash)]
-pub enum MapKey {
-    String,
-    Currency,
-}
-
-impl Display for MapKey {
-    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        f.write_str(match self {
-            Self::String => "String",
-            Self::Currency => ExtType::Currency.ident(),
-        })
-    }
-}
-
 /// Representation of a type containing an inner type.
 #[derive(Debug, Clone, Eq, PartialEq, Hash)]
 pub enum Container {
@@ -290,8 +265,6 @@ pub enum Container {
     Vec(Box<RustType>),
     /// &[{typ}]
     Slice(Box<RustType>),
-    /// Expandable<{typ}>
-    Expandable(Box<RustType>),
     /// Option<{typ}>
     Option(Box<RustType>),
     /// Box<{typ}>
@@ -299,7 +272,7 @@ pub enum Container {
     /// HashMap<{key}, {typ}>
     Map {
         /// HashMap key type.
-        key: MapKey,
+        key: &'static str,
         /// HashMap value type.
         value: Box<RustType>,
         /// Are we a reference?
@@ -315,7 +288,6 @@ impl Container {
             List(typ) => typ,
             Vec(typ) => typ,
             Slice(typ) => typ,
-            Expandable(typ) => typ,
             Option(typ) => typ,
             Box(typ) => typ,
             Map { value, .. } => value,
@@ -329,7 +301,6 @@ impl Container {
             List(typ) => typ,
             Vec(typ) => typ,
             Slice(typ) => typ,
-            Expandable(typ) => typ,
             Option(typ) => typ,
             Box(typ) => typ,
             Map { value, .. } => value,
@@ -421,7 +392,6 @@ impl Display for IntType {
 /// Types defined outside of codegen.
 #[derive(Debug, Copy, Clone, Eq, PartialEq, Hash)]
 pub enum ExtType {
-    Currency,
     RangeQueryTs,
     Timestamp,
     AlwaysTrue,
@@ -432,7 +402,6 @@ pub enum ExtType {
 impl ExtType {
     pub const fn ident(self) -> &'static str {
         match self {
-            Self::Currency => "payjp_types::Currency",
             Self::RangeQueryTs => "payjp_types::RangeQueryTs",
             Self::Timestamp => "payjp_types::Timestamp",
             Self::AlwaysTrue => "payjp_types::AlwaysTrue",
@@ -442,7 +411,6 @@ impl ExtType {
 
     pub const fn display_name(self) -> &'static str {
         match self {
-            Self::Currency => "Currency",
             Self::RangeQueryTs => "RangeQueryTs",
             Self::Timestamp => "Timestamp",
             Self::AlwaysTrue => "AlwaysTrue",

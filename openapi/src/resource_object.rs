@@ -49,7 +49,7 @@ impl CrateInfo {
 #[derive(Debug, Clone)]
 pub struct StripeObject {
     pub requests: Vec<RequestSpec>,
-    pub resource: StripeResource,
+    pub resource: XResource,
     pub data: StripeObjectData,
     pub krate: Option<CrateInfo>,
     pub deduplicated_objects: IndexMap<RustIdent, DeduppedObject>,
@@ -187,15 +187,19 @@ pub struct StripeObjectData {
     pub id_type: Option<RustType>,
 }
 
-pub fn parse_stripe_schema_as_rust_object(
+pub fn parse_schema_as_rust_object(
     schema: &Schema,
     path: &ComponentPath,
     ident: &RustIdent,
+    v31: bool,
 ) -> StripeObjectData {
     let not_deleted_path = path.as_not_deleted();
-    let infer_ctx = Inference::new(ident).id_path(&not_deleted_path).required(true);
+    let infer_ctx = Inference::new(ident).is_openapi_v31(v31).id_path(&not_deleted_path).required(true);
     let typ = infer_ctx.infer_schema_type(schema);
     let Some((mut rust_obj, _)) = typ.into_object() else {
+        // if let Some(RustObject::Struct(struct_)) = typ.into_object() {
+        //     return StripeObjectData { obj: RustObject::Struct(struct_), object_name: None, id_type: None };
+        // }
         panic!("Unexpected top level schema type for {}", path);
     };
     match &mut rust_obj {
@@ -239,10 +243,9 @@ pub fn parse_stripe_schema_as_rust_object(
 }
 
 #[derive(Debug, Clone, Eq, PartialEq, Serialize, Deserialize)]
-pub struct StripeOperation {
+pub struct XOperation {
     pub method_name: String,
     pub method_type: MethodType,
-    pub method_on: String,
     #[serde(rename = "operation")]
     pub operation_type: OperationType,
     pub path: String,
@@ -273,14 +276,14 @@ struct BaseResource {
 }
 
 #[derive(Debug, Clone)]
-pub struct StripeResource {
+pub struct XResource {
     pub path: ComponentPath,
     base_ident: RustIdent,
     pub in_package: Option<String>,
-    pub requests: Vec<StripeOperation>,
+    pub requests: Vec<XOperation>,
 }
 
-impl StripeResource {
+impl XResource {
     pub fn mod_path(&self) -> String {
         self.ident().to_snake_case()
     }
@@ -290,7 +293,7 @@ impl StripeResource {
     }
 }
 
-impl StripeResource {
+impl XResource {
     pub fn from_schema(schema: &Schema, path: ComponentPath) -> anyhow::Result<Self> {
         let resource = BaseResource::default();
         let mut in_package = None;
@@ -301,7 +304,7 @@ impl StripeResource {
         }
 
         let ident = RustIdent::create(&path);
-        let requests = if let Some(val) = schema.schema_data.extensions.get("x-payjpOperations") {
+        let requests = if let Some(val) = schema.schema_data.extensions.get("x-operations") {
             serde_json::from_value(val.clone())?
         } else {
             vec![]

@@ -6,21 +6,39 @@
 
 ** WIP **
 
-- generated/async-payjp-shared: Please wait my commits
+- [Openapi v3.1](./openapi/docs)はビルドできる状態になっております
+  - 内容の最終fixはまだです
+  - ディレクトリ構成・ビルド方法も試行錯誤中です
+  - $refなどのIDE補完が.jsonnetだと(工夫しないと)効かないため、基本は.jsonでいきつつ、Generics表現
+- openapiからrustのSDKの一部を生成するところは、ライブラリのopenapi v3.1対応ができておらず自前実装中で、今しばらくかかります
+  - ただしopenapi v2からrust sdkを生成可能です(非同期対応などはしてませんが)。[3.1->2.0の変換は可能](https://stackoverflow.com/questions/56637299/convert-openapi-3-0-to-swagger-2-0)です。
+  - openapi v2: https://www.reddit.com/r/rust/comments/x9zkr7/recommendations_for_rust_openapi_client/
+  - [ ] AllOfのobject構造merge
+  - [ ] top level listの許可
+  - [ ] etc...
+- 最終的なSDK（tokioなどの非同期機能提供など）も上記が完了してからとなります
+  - [ ] generated/async-payjp-shared
 
 based on [arlyon/async-stripe](https://github.com/arlyon/async-stripe) by Alexander Lyon
 
 ## memo
-
-openapi v2 => rust SDK vs ./openapi/src
-- https://www.reddit.com/r/rust/comments/x9zkr7/recommendations_for_rust_openapi_client/
-v3 => v2: ブラウザappなど変換方法は存在
 
 openapi分割
 - openapitools/openapi-generator-cli
   - dockerは動くがlocalで導入するのが大変な場合がある
   - 表現力が足りない。 ex, paths以下に$refのmulti key mergeができない
 - jsonnet
+
+expandable: 普段はnullstringなIDを返すが、expand=...を指定するとobjectを返す
+
+- jsonnet時にファイル参照を消したい. list refだけに(itemあるから無理？)
+
+top level listはpanicされる on parse_schema_as_rust_object()
+
+`obj` is borrowed here
+|                 returns a value referencing data owned by the current function
+自己参照はエラー
+https://qiita.com/garkimasera/items/272dc029281b8639aff2
 
 ## Example
 

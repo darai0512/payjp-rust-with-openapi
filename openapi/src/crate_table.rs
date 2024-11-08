@@ -4,7 +4,7 @@ use tabled::{Table, Tabled};
 use crate::components::Components;
 use crate::resource_object::StripeObject;
 use crate::utils::write_to_file;
-use crate::args::args;
+use crate::args;
 
 /// Write a table describing where all generated requests live
 pub fn write_crate_table(components: &Components) -> anyhow::Result<()> {

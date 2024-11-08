@@ -1,0 +1,29 @@
+services:
+  swagger-editor:
+    image: swaggerapi/swagger-editor:next-v5-unprivileged
+    ports:
+      - "8001:8080"
+
+  swagger-ui:
+    image: swaggerapi/swagger-ui
+    ports:
+      - "8002:8080"
+    volumes:
+      - .:/tmp/
+    environment:
+      SWAGGER_JSON: /tmp/openapi.json
+
+  prism:
+    image: stoplight/prism:master
+    ports:
+      - "8003:4010"
+    command: mock -h 0.0.0.0 /tmp/openapi.json
+    volumes:
+      - .:/tmp/
+
+  gen:
+    image: openapitools/openapi-generator-cli
+    command: generate -g openapi -i /tmp/openapi.json -o /tmp/dist
+    volumes:
+      - .:/tmp/
+    # watch error log by `docker compose logs -f gen`

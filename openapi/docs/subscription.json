@@ -36,7 +36,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/error"
+                  "$ref": "./errors.json#/components/schemas/error"
                 }
               }
             }
@@ -118,7 +118,18 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/subscriptionList"
+                  "allOf": [
+                    {"$ref": "./paginations.json#/components/schemas/list"},
+                    {
+                      "properties": {
+                        "data": {
+                          "type": "array",
+                          "description": "オブジェクトの配列",
+                          "items": {"$ref": "#/components/schemas/subscription"}
+                        }
+                      }
+                    }
+                  ]
                 }
               }
             }
@@ -128,7 +139,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/error"
+                  "$ref": "./errors.json#/components/schemas/error"
                 }
               }
             }
@@ -168,7 +179,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/error"
+                  "$ref": "./errors.json#/components/schemas/error"
                 }
               }
             }
@@ -215,7 +226,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/error"
+                  "$ref": "./errors.json#/components/schemas/error"
                 }
               }
             }
@@ -262,7 +273,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/error"
+                  "$ref": "./errors.json#/components/schemas/error"
                 }
               }
             }
@@ -302,7 +313,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/error"
+                  "$ref": "./errors.json#/components/schemas/error"
                 }
               }
             }
@@ -351,7 +362,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/error"
+                  "$ref": "./errors.json#/components/schemas/error"
                 }
               }
             }
@@ -391,7 +402,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/error"
+                  "$ref": "./errors.json#/components/schemas/error"
                 }
               }
             }
@@ -468,32 +479,32 @@
             "description": "現在の購読期間終了時のタイムスタンプ"
           },
           "trial_start": {
-            "type": ["integer", "null"],
+            "type": "integer", "nullable": true,
             "format": "int64",
             "description": "トライアル期間開始時のタイムスタンプ"
           },
           "trial_end": {
-            "type": ["integer", "null"],
+            "type": "integer", "nullable": true,
             "format": "int64",
             "description": "トライアル期間終了時のタイムスタンプ"
           },
           "paused_at": {
-            "type": ["integer", "null"],
+            "type": "integer", "nullable": true,
             "format": "int64",
             "description": "定期課金が停止状態になった時のタイムスタンプ"
           },
           "canceled_at": {
-            "type": ["integer", "null"],
+            "type": "integer", "nullable": true,
             "format": "int64",
             "description": "定期課金がキャンセル状態になった時のタイムスタンプ"
           },
           "resumed_at": {
-            "type": ["integer", "null"],
+            "type": "integer", "nullable": true,
             "format": "int64",
             "description": "停止またはキャンセル状態の定期課金が有効状態になった時のタイムスタンプ"
           },
           "metadata": {
-            "type": ["object", "null"],
+            "type": "object", "nullable": true,
             "description": "キーバリューの任意データ",
             "additionalProperties": {
               "type": "string"
@@ -548,7 +559,7 @@
             "description": "トライアル期間の日数"
           },
           "billing_day": {
-            "type": ["integer", "null"],
+            "type": "integer", "nullable": true,
             "description": "課金日。1から31の整数で指定可能。nullの場合は課金日を指定しない。"
           },
           "metadata": {
@@ -659,69 +670,6 @@
           }
         },
         "required": ["deleted", "id", "livemode"]
-      },
-      "subscriptionList": {
-        "type": "object",
-        "description": "subscriptionオブジェクトのlistオブジェクト",
-        "properties": {
-          "object": {
-            "type": "string",
-            "description": "固定値 'list'",
-            "example": "list"
-          },
-          "data": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/subscription"
-            }
-          },
-          "has_more": {
-            "type": "boolean",
-            "description": "さらにデータが存在するかどうか"
-          },
-          "url": {
-            "type": "string",
-            "description": "APIエンドポイントのURL"
-          },
-          "count": {
-            "type": "integer",
-            "description": "取得されたオブジェクトの総数"
-          }
-        },
-        "required": ["object", "data"]
-      },
-      "error": {
-        "type": "object",
-        "description": "エラーオブジェクト",
-        "properties": {
-          "error": {
-            "type": "object",
-            "properties": {
-              "status": {
-                "type": "integer",
-                "description": "HTTPステータスコード"
-              },
-              "type": {
-                "type": "string",
-                "description": "エラーの種類"
-              },
-              "message": {
-                "type": "string",
-                "description": "エラーメッセージ"
-              },
-              "param": {
-                "type": ["string", "null"],
-                "description": "エラーに関連するパラメータ名"
-              },
-              "code": {
-                "type": ["string", "null"],
-                "description": "エラーコード"
-              }
-            },
-            "required": ["status", "type", "message"]
-          }
-        },
-        "required": ["error"]
       }
     }
   }

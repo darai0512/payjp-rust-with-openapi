@@ -5,18 +5,16 @@ use anyhow::bail;
 use heck::ToSnakeCase;
 use openapiv3::{
     AdditionalProperties, IntegerFormat, ObjectType, ReferenceOr, Schema, SchemaKind, StringType,
-    Type, VariantOrUnknownOrEmpty,
+    Type, VariantOrUnknownOrEmpty
 };
 
 use crate::rust_object::{
     EnumVariant, FieldlessVariant, ObjectMetadata, RustObject, Struct, StructField, Visibility,
 };
 use crate::rust_type::{ExtType, IntType, RustType, SimpleType};
-use crate::spec::{
-    as_data_array_item, as_object_enum_name, is_enum_with_just_empty_string, ExpansionResources,
-};
+use crate::spec::{as_data_array_item, as_object_enum_name, as_object_type, is_enum_with_just_empty_string};
 use crate::types::{ComponentPath, RustIdent};
-use crate::args::args;
+use crate::args;
 
 #[derive(Copy, Clone, Debug)]
 pub struct Inference<'a> {
@@ -27,6 +25,7 @@ pub struct Inference<'a> {
     description: Option<&'a str>,
     title: Option<&'a str>,
     required: bool,
+    is_openapi_v31: bool,
 }
 
 impl<'a> Inference<'a> {
@@ -39,11 +38,17 @@ impl<'a> Inference<'a> {
             curr_ident: ident,
             id_path: None,
             title: None,
+            is_openapi_v31: false,
         }
     }
 
     pub fn can_borrow(mut self, can_borrow: bool) -> Self {
         self.can_borrow = can_borrow;
+        self
+    }
+
+    pub fn is_openapi_v31(mut self, v31: bool) -> Self {
+        self.is_openapi_v31 = v31;
         self
     }
 
@@ -159,7 +164,94 @@ impl<'a> Inference<'a> {
             }
             SchemaKind::Type(Type::Object(typ)) => self.infer_object_typ(typ, field),
             SchemaKind::AnyOf { any_of: fields } | SchemaKind::OneOf { one_of: fields } => {
-                self.infer_any_or_one_of(fields, field)
+                self.infer_any_or_one_of(fields)
+            }
+            SchemaKind::AllOf { all_of: fields }  => {
+                let a = fields[1].as_item().unwrap();
+                let b = match &a.schema_kind {
+                    SchemaKind::Type(Type::Object(obj)) => obj,
+                    SchemaKind::Any(any) => {
+                        let d = &ObjectType {
+                            properties: any.properties.clone(),
+                            additional_properties: any.additional_properties.clone(),
+                            required: any.required.clone(),
+                            min_properties: any.min_properties.clone(),
+                            max_properties: any.max_properties.clone(),
+                        };
+                        let dd = as_data_array_item(d).unwrap();
+                        let element_type = self.infer_schema_or_ref_type(dd);
+
+                        &ObjectType {
+                            properties: any.properties.clone(),
+                            additional_properties: any.additional_properties.clone(),
+                            required: any.required.clone(),
+                            min_properties: any.min_properties.clone(),
+                            max_properties: any.max_properties.clone(),
+                        }
+                    },
+                    _ => {
+                        panic!("unhandled field type");
+                    }
+                };
+                let a = fields[0].as_item().unwrap();
+                let b = match &a.schema_kind {
+                    SchemaKind::Type(Type::Object(obj)) => obj,
+                    SchemaKind::Any(any) => {
+                        let b2 = match any.properties.get("data").unwrap() {
+                            ReferenceOr::Reference { reference } => reference,
+                            ReferenceOr::Item(item) => {
+                                let a = &**item;
+                                let bbb = match &a.schema_kind {
+                                    SchemaKind::Type(Type::Array(typ)) => {
+                                        let element = typ.items.as_ref().expect("Array type had no items field");
+                                        let c = element.as_item();
+                                        c
+                                    },
+                                    _ => {todo!()}
+                                };
+                                // let ccc = self.infer_base_type(bbb);
+                                "Hoge"
+                            }
+                        };
+                        // let b3 = any.properties.get("data").unwrap().as_item();
+                        let d = &ObjectType {
+                            properties: any.properties.clone(),
+                            additional_properties: any.additional_properties.clone(),
+                            required: any.required.clone(),
+                            min_properties: any.min_properties.clone(),
+                            max_properties: any.max_properties.clone(),
+                        };
+                        let dd = as_data_array_item(d).unwrap();
+                        let element_type = self.infer_schema_or_ref_type(dd); //SchemaKind::Any(any)でpanicさせない工夫
+
+                        &ObjectType {
+                            properties: any.properties.clone(),
+                            additional_properties: any.additional_properties.clone(),
+                            required: any.required.clone(),
+                            min_properties: any.min_properties.clone(),
+                            max_properties: any.max_properties.clone(),
+                        }
+                    },
+                    _ => {
+                        panic!("unhandled field type");
+                    }
+                };
+                // AllOf -> type::list で十分？他の
+                self.infer_object_typ(b, field)
+            }
+            SchemaKind::Any(any) => {
+                if !self.is_openapi_v31 || (any.properties.is_empty() && any.additional_properties.is_none() &&
+                    self.field_name != Some("data")) {
+                    panic!("unhandled field type");
+                } else {
+                    self.infer_object_typ(&ObjectType {
+                        properties: any.properties.clone(),
+                        additional_properties: any.additional_properties.clone(),
+                        required: any.required.clone(),
+                        min_properties: any.min_properties.clone(),
+                        max_properties: any.max_properties.clone(),
+                    }, field)
+                }
             }
             _ => {
                 panic!("unhandled field type");
@@ -173,11 +265,13 @@ impl<'a> Inference<'a> {
         if !variants.is_empty() {
             return self.build_object_type(RustObject::FieldlessEnum(variants));
         }
+        /*
         if let Some(f_name) = self.field_name {
             if f_name == "currency" || f_name.ends_with("_currency") {
                 return RustType::ext(ExtType::Currency);
             }
         }
+         */
 
         if self.should_infer_as_id_type() {
             if let Some(id_path) = self.id_path {
@@ -205,11 +299,7 @@ impl<'a> Inference<'a> {
         if let Some(AdditionalProperties::Schema(additional)) = &typ.additional_properties {
             let map_value_typ =
                 self.required(true).can_borrow(false).infer_schema_or_ref_type(additional);
-            return if should_infer_currency_key_from_desc(self.description) {
-                RustType::currency_map(map_value_typ, self.can_borrow)
-            } else {
-                RustType::str_map(map_value_typ, self.can_borrow)
-            };
+            return RustType::str_map(map_value_typ, self.can_borrow);
         }
 
         // NB: There is some inconsistency between usage of properties: {} and not including
@@ -241,15 +331,13 @@ impl<'a> Inference<'a> {
         self.build_object_type(RustObject::Struct(Struct::new(fields)))
     }
 
-    fn infer_any_or_one_of(&self, fields: &[ReferenceOr<Schema>], field: &Schema) -> RustType {
+    fn infer_any_or_one_of(&self, fields: &[ReferenceOr<Schema>]) -> RustType {
         let fields = fields
             .iter()
             .filter(|field| !is_enum_with_just_empty_string(field))
             .collect::<Vec<_>>();
         if fields.len() == 1 {
             self.infer_schema_or_ref_type(fields[0])
-        } else if let Some(resources) = field.schema_data.extensions.get("x-expansionResources") {
-            parse_expansion_resources(resources).expect("Failed to parse expansion resources")
         } else if fields[0].as_item().and_then(|s| s.schema_data.title.as_deref())
             == Some("range_query_specs")
         {
@@ -383,30 +471,6 @@ impl<'a> Inference<'a> {
             RustType::int(IntType::I64)
         }
     }
-}
-
-fn should_infer_currency_key_from_desc(desc: Option<&str>) -> bool {
-    let Some(desc) = desc else {
-        return false;
-    };
-    desc.contains("Each key must be a three-letter [ISO currency code]")
-}
-
-fn parse_expansion_resources(resources: &serde_json::Value) -> anyhow::Result<RustType> {
-    let expansion_resources = serde_json::from_value::<ExpansionResources>(resources.clone())?;
-
-    let schema_kind = expansion_resources.into_schema_kind();
-    let SchemaKind::OneOf { one_of } = schema_kind else {
-        bail!("Expected expansion resources to only contain `oneOf`");
-    };
-    if one_of.len() != 1 {
-        bail!("Expected a single specification in expansion resources");
-    }
-    let ReferenceOr::Reference { reference } = one_of.first().unwrap() else {
-        bail!("Expected expansion resource to only contain a schema reference");
-    };
-    let path = ComponentPath::from_reference(reference);
-    Ok(RustType::expandable(RustType::component_path(path)))
 }
 
 fn build_enum_variants(options: &[Option<String>]) -> Vec<FieldlessVariant> {

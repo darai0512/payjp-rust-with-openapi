@@ -1,0 +1,197 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "PAY.JP API",
+    "version": "1.0.0"
+  },
+  "paths": {
+    "/events": {
+      "get": {
+        "summary": "イベントリストを取得",
+        "description": "イベントリストを取得します。",
+        "parameters": [
+          {"$ref": "./paginations.json#/components/parameters/limit"},
+          {"$ref": "./paginations.json#/components/parameters/offset"},
+          {"$ref": "./paginations.json#/components/parameters/since"},
+          {"$ref": "./paginations.json#/components/parameters/until"},
+          {
+            "name": "resource_id",
+            "in": "query",
+            "description": "取得するeventに紐づくAPIリソースのID (e.g. customer.id)",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "object",
+            "in": "query",
+            "description": "取得するeventに紐づくAPIリソースのobject。値はリソース名(e.g. customer, charge)",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "type",
+            "in": "query",
+            "description": "取得するeventのtype",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "eventオブジェクトのlistオブジェクト",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {"$ref": "./paginations.json#/components/schemas/list"},
+                    {
+                      "properties": {
+                        "data": {
+                          "type": "array",
+                          "description": "オブジェクトの配列",
+                          "items": {"$ref": "#/components/schemas/event"}
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "4XX": {
+            "description": "エラーレスポンス",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./errors.json#/components/schemas/error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/events/{event}": {
+      "parameters": [
+        {
+          "name": "event",
+          "in": "path",
+          "description": "evnt_で始まる一意なオブジェクトを示す文字列",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "example": "evnt_54db4d63c7886256acdbc784ccf"
+          }
+        }
+      ],
+      "get": {
+        "summary": "イベント情報を取得",
+        "description": "特定のイベント情報を取得します。",
+        "responses": {
+          "200": {
+            "description": "指定したidのeventオブジェクト",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/event"
+                }
+              }
+            }
+          },
+          "4XX": {
+            "description": "エラーレスポンス",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./errors.json#/components/schemas/error"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "event": {
+        "type": "object",
+        "description": "eventオブジェクト",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "evnt_で始まる一意なオブジェクトを示す文字列",
+            "example": "evnt_54db4d63c7886256acdbc784ccf"
+          },
+          "object": {
+            "type": "string",
+            "description": "\"event\"の固定文字列",
+            "enum": ["event"]
+          },
+          "livemode": {
+            "type": "boolean",
+            "description": "本番環境かどうか"
+          },
+          "created": {
+            "type": "integer",
+            "format": "int64",
+            "description": "このイベント作成時のUTCタイムスタンプ"
+          },
+          "type": {
+            "type": "string",
+            "description": "このイベントのタイプ。値の種類については[こちら](https://pay.jp/docs/webhook#%E3%82%A4%E3%83%99%E3%83%B3%E3%83%88)",
+            "enum": [
+              "charge.succeeded",
+              "charge.failed",
+              "charge.updated",
+              "charge.refunded",
+              "charge.captured",
+              "dispute.created",
+              "token.created",
+              "customer.created",
+              "customer.updated",
+              "customer.deleted",
+              "customer.card.created",
+              "customer.card.updated",
+              "customer.card.deleted",
+              "plan.created",
+              "plan.updated",
+              "plan.deleted",
+              "subscription.created",
+              "subscription.updated",
+              "subscription.deleted",
+              "subscription.paused",
+              "subscription.resumed",
+              "subscription.canceled",
+              "subscription.renewed",
+              "transfer.succeeded",
+              "tenant.created",
+              "tenant.deleted",
+              "tenant.updated",
+              "tenant_transfer.succeeded",
+              "term.created",
+              "term.closed",
+              "statement.created",
+              "balance.created",
+              "balance.fixed",
+              "balance.closed",
+              "balance.merged"
+            ]
+          },
+          "pending_webhooks": {
+            "type": "integer",
+            "description": "設定されたURLへの通知が完了していない(2xxのレスポンスが得られていない)webhookの数"
+          },
+          "data": {
+            "type": "object",
+            "description": "このイベントに関連したリソースオブジェクト todo generics????"
+          }
+        },
+        "required": ["id", "object", "livemode", "created", "type", "data"]
+      }
+    }
+  }
+}

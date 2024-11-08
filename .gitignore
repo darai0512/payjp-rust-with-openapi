@@ -13,3 +13,5 @@ lcov.info
 *.swp
 ~*
 .vscode
+
+openapi.json

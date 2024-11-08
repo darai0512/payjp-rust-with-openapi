@@ -1,0 +1,173 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "term",
+    "version": "1.0.0"
+  },
+  "paths": {
+    "/terms/{term}": {
+      "get": {
+        "summary": "集計区間オブジェクトを取得",
+        "description": "指定されたIDの集計区間（Termオブジェクト）を取得します。",
+        "operationId": "GetTerm",
+        "parameters": [
+          {
+            "name": "term",
+            "in": "path",
+            "description": "TermオブジェクトのID（tm_で始まる一意な文字列）",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "style": "simple"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Termオブジェクトの詳細情報",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/term"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "エラーレスポンス",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./errors.json#/components/schemas/error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/terms": {
+      "get": {
+        "summary": "集計区間のリストを取得",
+        "description": "集計区間（Termオブジェクト）のリストを取得します。",
+        "operationId": "GetTerms",
+        "parameters": [
+          {"$ref": "./paginations.json#/components/parameters/limit"},
+          {"$ref": "./paginations.json#/components/parameters/offset"},
+          {"$ref": "./paginations.json#/components/parameters/since"},
+          {"$ref": "./paginations.json#/components/parameters/until"},
+          {
+            "name": "since_start_at",
+            "in": "query",
+            "description": "start_atが指定したタイムスタンプ以降のオブジェクトを取得",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          },
+          {
+            "name": "until_start_at",
+            "in": "query",
+            "description": "start_atが指定したタイムスタンプ以前のオブジェクトを取得",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Termオブジェクトのリスト",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {"$ref": "./paginations.json#/components/schemas/list"},
+                    {
+                      "properties": {
+                        "data": {
+                          "type": "array",
+                          "description": "Termオブジェクトの配列",
+                          "items": {"$ref": "#/components/schemas/term"}
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "エラーレスポンス",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./errors.json#/components/schemas/error"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "term": {
+        "$dynamicAnchor": "payjpObject",
+        "type": "object",
+        "description": "Term（集計区間）オブジェクト",
+        "properties": {
+          "object": {
+            "type": "string",
+            "description": "固定文字列",
+            "enum": [
+              "term"
+            ]
+          },
+          "id": {
+            "type": "string",
+            "description": "tm_で始まる一意なオブジェクトを示す文字列",
+            "example": "tm_425000e2a448b39b83480a358fee5"
+          },
+          "livemode": {
+            "type": "boolean",
+            "description": "本番環境かどうか。"
+          },
+          "start_at": {
+            "type": "integer",
+            "format": "int64",
+            "description": "区間開始時刻のタイムスタンプ",
+            "example": 1696086000
+          },
+          "end_at": {
+            "type": "integer",
+            "nullable":  true,
+            "format": "int64",
+            "description": "区間終了時刻のタイムスタンプ。Termが表す区間はstart_at以上end_at未満の範囲となります。翌サイクルのTermの場合`null`を返します。",
+            "example": null
+          },
+          "closed": {
+            "type": "boolean",
+            "description": "締め処理が完了済みならTrue"
+          },
+          "charge_count": {
+            "type": "integer",
+            "description": "この区間内で確定された支払いの数"
+          },
+          "refund_count": {
+            "type": "integer",
+            "description": "この区間内で確定された返金の数"
+          },
+          "dispute_count": {
+            "type": "integer",
+            "description": "この区間内で確定されたチャージバック/チャージバックキャンセルの数"
+          }
+        },
+        "required": ["id", "object", "livemode", "start_at", "closed", "charge_count", "refund_count", "dispute_count"]
+      }
+    }
+  }
+}

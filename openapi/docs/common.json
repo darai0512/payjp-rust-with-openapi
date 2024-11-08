@@ -1,0 +1,23 @@
+{
+  "components": {
+    "schemas": {
+      "deleteResponse": {
+        "type": "object",
+        "properties": {
+          "deleted": {
+            "type": "boolean",
+            "description": "`true`が入ります"
+          },
+          "id": {
+            "type": "string",
+            "description": "削除したオブジェクトのID"
+          },
+          "livemode": {
+            "type": "boolean",
+            "description": "本番環境かどうか"
+          }
+        }
+      }
+    }
+  }
+}

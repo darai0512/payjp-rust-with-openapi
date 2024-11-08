@@ -1,7 +1,7 @@
 use std::fmt::{Display, Formatter, Write};
 
 use crate::components::PathInfo;
-use crate::rust_type::{MapKey, SimpleType};
+use crate::rust_type::{SimpleType};
 use crate::types::RustIdent;
 use crate::PAYJP_TYPES;
 
@@ -32,7 +32,7 @@ pub enum PrintableContainer {
     Expandable(Box<PrintableType>),
     Option(Box<PrintableType>),
     Box(Box<PrintableType>),
-    Map { key: MapKey, value: Box<PrintableType>, is_ref: bool },
+    Map { key: &'static str, value: Box<PrintableType>, is_ref: bool },
 }
 
 impl<'a> Display for PrintableWithLifetime<'a> {

@@ -1,36 +1,17 @@
-## format
-
-fn should_skip_request(op: &StripeOperation) -> bool {
-// TODO: what is the relevance of the `method_on` field? A small number of requests
-// use "collection" instead of "service", but the OpenAPI schema does not differentiate
-// so we just end up with duplicate requests if we don't skip like this
-
-method_on フィールドの関連性は何ですか？ごく一部のリクエストでは "service" の代わりに "collection" を使用していますが、OpenAPI スキーマではこれらを区別しないため、これをスキップしないと重複したリクエストが発生してしまいます。
-
--> 無くす
-
-
-
 # commands
 
 ```
-$ uv run jsonnet src/root.yaml -o openapi.json
-
-docker run --rm \
-  -v ".:/tmp/" \
-  -w "/tmp/" \
-  openapitools/openapi-generator-cli generate \
-    -g rust \
-    -i ./openapi.yaml \
-    -o ./dist/client
-
-docker run \
-  -p 80:8080 \
-  -e SWAGGER_JSON=/src/openapi.json \
-  -v `pwd`/openapi.json:/src swaggerapi/swagger-ui
+# jsonnet でrootをビルドし
+$ uv run jsonnet root.jsonnet -o openapi.json
+# openapi-generator-cli で$refのパス読み込みを解決したopenapi.jsonをビルド
+$ docker compose up -d
+# dist/openapi.jsonが最終生成物。できていなければエラーログを確認
+$docker compose logs -f gen
 ```
 
-# ボツ
+# ボツmemo
+
+package.json をmake代わりに使い方かったが微妙だった
 
 ```
 "scripts": {
@@ -45,10 +26,10 @@ docker run \
 
 ```
 docker run --rm \
-  -v ".:/tmp/" \
-  -w "/tmp/" \
+  -v ".:/" \
+  -w "/" \
   openapitools/openapi-generator-cli generate \
-    -g openapi \
-    -i ./src/root.yaml \
+    -g rust \
+    -i ./root.json \
     -o ./dist
 ```
