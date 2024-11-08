@@ -28,7 +28,7 @@ pub trait Visit<'a> {
         req.visit(self);
     }
 
-    fn visit_stripe_object(&mut self, obj: &'a StripeObject)
+    fn visit_object(&mut self, obj: &'a StripeObject)
     where
         Self: Sized,
     {

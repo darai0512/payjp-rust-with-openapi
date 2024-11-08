@@ -1,9 +1,8 @@
 {
-  "openapi": "3.0.0",
+  "openapi": "3.1.0",
   "info": {
     "title": "PAY.JP API",
-    "version": "1.0.0",
-    "description": "PAY.JP Charge API specification in OpenAPI 3.0"
+    "version": "1.0.0"
   },
   "paths": {
     "/charges": {
@@ -143,22 +142,22 @@
         }
       }
     },
-    "/charges/{id}": {
+    "/charges/{charge}": {
+      "parameters": [
+        {
+          "name": "charge",
+          "in": "path",
+          "description": "支払いID",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "example": "ch_fa990a4c10672a93053a774730b0a"
+          }
+        }
+      ],
       "get": {
         "summary": "支払い情報を取得",
         "description": "生成された支払い情報を取得します。",
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "description": "支払いID",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "example": "ch_fa990a4c10672a93053a774730b0a"
-            }
-          }
-        ],
         "responses": {
           "200": {
             "description": "指定したidのchargeオブジェクト",
@@ -185,18 +184,6 @@
       "post": {
         "summary": "支払い情報を更新",
         "description": "支払い情報を更新します。",
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "description": "支払いID",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "example": "ch_fa990a4c10672a93053a774730b0a"
-            }
-          }
-        ],
         "requestBody": {
           "content": {
             "application/x-www-form-urlencoded": {
@@ -230,13 +217,13 @@
         }
       }
     },
-    "/charges/{id}/tds_finish": {
+    "/charges/{charge}/tds_finish": {
       "post": {
         "summary": "3Dセキュアフローを完了する",
         "description": "3Dセキュア認証が終了した支払いに対し、決済を行います。\n[支払いを作成](#支払いを作成) と同様の決済処理が実行され、実際の請求が行われる状態になります。カードの状態によっては支払いに失敗し、402エラーとなる点も同様です。\n保留中の支払いで固定値となっていた`capture`、`captured_at`、`expired_at`は、支払い作成時に指定した通りに反映されます。`captured_at`、`expired_at`の時刻は本APIにリクエストした時刻を基準として設定されます。\n\n`three_d_secure_status`が`verified`、`attempted`でない支払いに対して本APIをリクエストした場合、エラーとなります。",
         "parameters": [
           {
-            "name": "id",
+            "name": "charge",
             "in": "path",
             "description": "支払いID",
             "required": true,
@@ -270,13 +257,13 @@
         }
       }
     },
-    "/charges/{id}/refund": {
+    "/charges/{charge}/refund": {
       "post": {
         "summary": "返金する",
         "description": "支払い済みとなった処理を返金します。全額返金、及び `amount` を指定することで金額の部分返金を行うことができます。また確定していない支払いも取り消すことができますが `amount` を指定して部分返金をすることはできません。\n\nなお返金可能な期限につきましては売上作成より`180日以内`となります。",
         "parameters": [
           {
-            "name": "id",
+            "name": "charge",
             "in": "path",
             "description": "支払いID",
             "required": true,
@@ -319,13 +306,13 @@
         }
       }
     },
-    "/charges/{id}/reauth": {
+    "/charges/{charge}/reauth": {
       "post": {
         "summary": "支払いを再認証する",
         "description": "**各種SDKは順次対応予定です**\n\n認証状態となった処理待ちの支払いを再認証します。 `captured=\"false\"` の支払いが対象です。\n`expiry_days` を指定することで、新たな認証の期間を定めることができます。 `expiry_days` はデフォルトで7日となっており、1日~60日の間で設定が可能です。なお60日に設定した場合、認証期限は59日後の11:59PM(日本時間)までになります。\n\n**再認証が必要な場合は認証状態の charge を[返金し](#返金する)、新たに[支払いを作成](#支払いを作成) することを推奨いたします。**\n\nこのAPIは認証済みの与信をキャンセルせず別の与信を作るため、同じ金額で認証済みでも失敗したり、デビットカードなどでは一度目の認証(capture=falseの支払い)と含めて二重に金額が引き落とされることがあります。",
         "parameters": [
           {
-            "name": "id",
+            "name": "charge",
             "in": "path",
             "description": "支払いID",
             "required": true,
@@ -368,13 +355,13 @@
         }
       }
     },
-    "/charges/{id}/capture": {
+    "/charges/{charge}/capture": {
       "post": {
         "summary": "支払い処理を確定する",
         "description": "認証状態となった処理待ちの支払い処理を確定させます。具体的には `captured=\"false\"` となった支払いが該当します。",
         "parameters": [
           {
-            "name": "id",
+            "name": "charge",
             "in": "path",
             "description": "支払いID",
             "required": true,
@@ -457,7 +444,7 @@
             "description": "認証処理が成功しているかどうか。"
           },
           "expired_at": {
-            "type": ["integer", "null"],
+            "type": "integer", "nullable": true,
             "format": "int64",
             "description": "認証状態が自動的に失効される日時のタイムスタンプ"
           },
@@ -466,7 +453,7 @@
             "description": "支払い処理を確定しているかどうか"
           },
           "captured_at": {
-            "type": ["integer", "null"],
+            "type": "integer", "nullable": true,
             "format": "int64",
             "description": "支払い処理確定時のUTCタイムスタンプ"
           },
@@ -474,19 +461,19 @@
             "$ref": "#/components/schemas/card"
           },
           "customer": {
-            "type": ["string", "null"],
+            "type": "string", "nullable": true,
             "description": "顧客ID"
           },
           "description": {
-            "type": ["string", "null"],
+            "type": "string", "nullable": true,
             "description": "概要"
           },
           "failure_code": {
-            "type": ["string", "null"],
+            "type": "string", "nullable": true,
             "description": "失敗した支払いのエラーコード"
           },
           "failure_message": {
-            "type": ["string", "null"],
+            "type": "string", "nullable": true,
             "description": "失敗した支払いの説明"
           },
           "fee_rate": {
@@ -502,43 +489,43 @@
             "description": "この支払いに対しての返金額"
           },
           "refund_reason": {
-            "type": ["string", "null"],
+            "type": "string", "nullable": true,
             "description": "返金理由"
           },
           "subscription": {
-            "type": ["string", "null"],
+            "type": "string", "nullable": true,
             "description": "sub_から始まる定期課金のID"
           },
           "metadata": {
-            "type": ["object", "null"],
+            "type": "object", "nullable": true,
             "description": "キーバリューの任意データ",
             "additionalProperties": {
               "type": "string"
             }
           },
           "platform_fee": {
-            "type": ["integer", "null"],
+            "type": "integer", "nullable": true,
             "description": "[PAY.JP Platform](#platform-api) のみ\n\nプラットフォーマーに振り分けられる入金金額。"
           },
           "tenant": {
-            "type": ["string", "null"],
+            "type": "string", "nullable": true,
             "description": "[PAY.JP Platform](#platform-api)のみ\n\nテナントID"
           },
           "platform_fee_rate": {
-            "type": ["string", "null"],
+            "type": "string", "nullable": true,
             "description": "[PAY.JP Platform](#platform-api)のみ\n\n[テナント作成](#テナントを作成)時に指定したプラットフォーム利用料率(%)"
           },
           "total_platform_fee": {
-            "type": ["integer", "null"],
+            "type": "integer", "nullable": true,
             "description": "[PAY.JP Platform](#platform-api)のみ\n\nプラットフォーム利用料総額"
           },
           "three_d_secure_status": {
-            "type": ["string", "null"],
+            "type": "string", "nullable": true,
             "description": "3Dセキュアの実施状況",
             "enum": ["unverified", "verified", "attempted", "failed", "error", null]
           },
           "term_id": {
-            "type": ["string", "null"],
+            "type": "string", "nullable": true,
             "description": "[入金管理オブジェクトの刷新に伴い、2024/06/01以降に提供されます。](https://pay.jp/docs/migrate-transfer)\n\nこの支払いが関連付けられたTermオブジェクトのID"
           }
         },
@@ -586,27 +573,27 @@
             "description": "カード有効期限の年"
           },
           "name": {
-            "type": ["string", "null"],
+            "type": "string", "nullable": true,
             "description": "カード名義"
           },
           "address_city": {
-            "type": ["string", "null"],
+            "type": "string", "nullable": true,
             "description": "請求先住所（市区町村）"
           },
           "address_line1": {
-            "type": ["string", "null"],
+            "type": "string", "nullable": true,
             "description": "請求先住所（番地）"
           },
           "address_line2": {
-            "type": ["string", "null"],
+            "type": "string", "nullable": true,
             "description": "請求先住所（建物名）"
           },
           "address_state": {
-            "type": ["string", "null"],
+            "type": "string", "nullable": true,
             "description": "請求先住所（都道府県）"
           },
           "address_zip": {
-            "type": ["string", "null"],
+            "type": "string", "nullable": true,
             "description": "請求先住所（郵便番号）"
           },
           "address_zip_check": {
@@ -624,27 +611,27 @@
             "description": "カード指紋"
           },
           "customer": {
-            "type": ["string", "null"],
+            "type": "string", "nullable": true,
             "description": "このカードを保有する顧客ID"
           },
           "metadata": {
-            "type": ["object", "null"],
+            "type": "object", "nullable": true,
             "description": "キーバリューの任意データ",
             "additionalProperties": {
               "type": "string"
             }
           },
           "three_d_secure_status": {
-            "type": ["string", "null"],
+            "type": "string", "nullable": true,
             "description": "3Dセキュアの利用状況",
             "enum": ["available", "unavailable", null]
           },
           "email": {
-            "type": ["string", "null"],
+            "type": "string", "nullable": true,
             "description": "メールアドレス"
           },
           "phone": {
-            "type": ["string", "null"],
+            "type": "string", "nullable": true,
             "description": "電話番号"
           }
         },
@@ -820,11 +807,11 @@
                 "description": "エラーメッセージ"
               },
               "param": {
-                "type": ["string", "null"],
+                "type": "string", "nullable": true,
                 "description": "エラーに関連するパラメータ名"
               },
               "code": {
-                "type": ["string", "null"],
+                "type": "string", "nullable": true,
                 "description": "エラーコード"
               }
             },

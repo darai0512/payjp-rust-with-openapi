@@ -317,27 +317,27 @@
             "description": "最低入金額"
           },
           "bank_code": {
-            "type": ["string", "null"],
+            "type": "string", "nullable": true,
             "description": "4桁の銀行コード"
           },
           "bank_branch_code": {
-            "type": ["string", "null"],
+            "type": "string", "nullable": true,
             "description": "3桁の支店コード"
           },
           "bank_account_type": {
-            "type": ["string", "null"],
+            "type": "string", "nullable": true,
             "description": "預金種別"
           },
           "bank_account_number": {
-            "type": ["string", "null"],
+            "type": "string", "nullable": true,
             "description": "口座番号"
           },
           "bank_account_holder_name": {
-            "type": ["string", "null"],
+            "type": "string", "nullable": true,
             "description": "口座名義"
           },
           "bank_account_status": {
-            "type": ["string", "null"],
+            "type": "string", "nullable": true,
             "description": "口座状態。pending:未確認, success:入金確認済み, failed:入金不可能",
             "enum": ["pending", "success", "failed"]
           },
@@ -369,7 +369,7 @@
                   "enum": ["passed", "in_review", "declined"]
                 },
                 "available_date": {
-                  "type": ["integer", "null"],
+                  "type": "integer", "nullable": true,
                   "format": "int64",
                   "description": "利用可能開始時刻のタイムスタンプ"
                 }
@@ -378,7 +378,7 @@
             }
           },
           "metadata": {
-            "type": ["object", "null"],
+            "type": "object", "nullable": true,
             "description": "キーバリューの任意データ",
             "additionalProperties": {
               "type": "string"
@@ -578,11 +578,11 @@
                 "description": "エラーメッセージ"
               },
               "param": {
-                "type": ["string", "null"],
+                "type": "string", "nullable": true,
                 "description": "エラーに関連するパラメータ名"
               },
               "code": {
-                "type": ["string", "null"],
+                "type": "string", "nullable": true,
                 "description": "エラーコード"
               }
             },

@@ -8,7 +8,7 @@ use openapi_codegen::codegen::CodeGen;
 use openapi_codegen::crates::ALL_CRATES;
 use openapi_codegen::spec::Spec;
 use openapi_codegen::utils::write_to_file;
-use openapi_codegen::args::args;
+use openapi_codegen::args;
 use tracing::info;
 
 

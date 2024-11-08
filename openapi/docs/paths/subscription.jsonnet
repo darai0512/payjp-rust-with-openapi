@@ -468,32 +468,32 @@
             "description": "現在の購読期間終了時のタイムスタンプ"
           },
           "trial_start": {
-            "type": ["integer", "null"],
+            "type": "integer", "nullable": true,
             "format": "int64",
             "description": "トライアル期間開始時のタイムスタンプ"
           },
           "trial_end": {
-            "type": ["integer", "null"],
+            "type": "integer", "nullable": true,
             "format": "int64",
             "description": "トライアル期間終了時のタイムスタンプ"
           },
           "paused_at": {
-            "type": ["integer", "null"],
+            "type": "integer", "nullable": true,
             "format": "int64",
             "description": "定期課金が停止状態になった時のタイムスタンプ"
           },
           "canceled_at": {
-            "type": ["integer", "null"],
+            "type": "integer", "nullable": true,
             "format": "int64",
             "description": "定期課金がキャンセル状態になった時のタイムスタンプ"
           },
           "resumed_at": {
-            "type": ["integer", "null"],
+            "type": "integer", "nullable": true,
             "format": "int64",
             "description": "停止またはキャンセル状態の定期課金が有効状態になった時のタイムスタンプ"
           },
           "metadata": {
-            "type": ["object", "null"],
+            "type": "object", "nullable": true,
             "description": "キーバリューの任意データ",
             "additionalProperties": {
               "type": "string"
@@ -548,7 +548,7 @@
             "description": "トライアル期間の日数"
           },
           "billing_day": {
-            "type": ["integer", "null"],
+            "type": "integer", "nullable": true,
             "description": "課金日。1から31の整数で指定可能。nullの場合は課金日を指定しない。"
           },
           "metadata": {
@@ -710,11 +710,11 @@
                 "description": "エラーメッセージ"
               },
               "param": {
-                "type": ["string", "null"],
+                "type": "string", "nullable": true,
                 "description": "エラーに関連するパラメータ名"
               },
               "code": {
-                "type": ["string", "null"],
+                "type": "string", "nullable": true,
                 "description": "エラーコード"
               }
             },

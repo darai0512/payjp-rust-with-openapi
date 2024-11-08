@@ -9,11 +9,11 @@ use crate::rust_object::{ObjectMetadata, RustObject, Struct, Visibility};
 use crate::rust_type::{RustType, SimpleType};
 use crate::spec::{get_ok_response_schema, get_request_form_parameters, Spec};
 use crate::spec_inference::Inference;
-use crate::resource_object::{OperationType, PathParam, RequestParam, RequestSpec, StripeOperation};
+use crate::resource_object::{OperationType, PathParam, RequestParam, RequestSpec, XOperation};
 use crate::types::{ComponentPath, RustIdent};
 
 /// Should we skip a currently unsupported request?
-fn should_skip_request(op: &StripeOperation) -> bool {
+fn should_skip_request(op: &XOperation) -> bool {
     // Skip non-JSON response (HTML, binary format (PDF) response, file upload (form/multipart)...)
     op.method_name == "tds_start"
 }
@@ -83,7 +83,7 @@ fn deduplicate_method_names<'a>(
 }
 
 fn get_req_details<'a>(
-    op: &'a StripeOperation,
+    op: &'a XOperation,
     spec: &'a Spec,
 ) -> anyhow::Result<RequestDetails<'a>> {
     let operation = spec
@@ -135,7 +135,7 @@ fn get_req_details<'a>(
 }
 
 pub fn parse_requests(
-    operations: Vec<StripeOperation>,
+    operations: Vec<XOperation>,
     spec: &Spec,
     ident: &RustIdent,
     path_id_map: &HashMap<String, ComponentPath>,

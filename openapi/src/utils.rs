@@ -3,7 +3,7 @@ use std::io::Write;
 use std::path::{Path, PathBuf};
 
 use anyhow::Context;
-use crate::args::args;
+use crate::args;
 
 
 /// Write to a file, starting paths from the `out` directory and ensuring existence

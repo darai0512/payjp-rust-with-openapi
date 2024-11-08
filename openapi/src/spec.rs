@@ -15,8 +15,13 @@ impl Spec {
         Self(spec)
     }
 
+    /*
     pub fn version(&self) -> &str {
         self.0.info.version.as_str()
+    }
+     */
+    pub fn is_openapi_v31(&self) -> bool {
+        self.0.openapi.as_str() == "3.1.0"
     }
 
     fn components(&self) -> &Components {

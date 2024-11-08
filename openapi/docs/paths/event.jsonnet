@@ -336,11 +336,11 @@
                 ]
               },
               "param": {
-                "type": ["string", "null"],
+                "type": "string", "nullable": true,
                 "description": "エラーに関連するパラメータ名"
               },
               "charge": {
-                "type": ["string", "null"],
+                "type": "string", "nullable": true,
                 "description": "エラーに関連する支払いID"
               }
             },

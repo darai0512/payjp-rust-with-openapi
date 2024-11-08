@@ -5,7 +5,7 @@ use anyhow::bail;
 use heck::ToSnakeCase;
 use openapiv3::{
     AdditionalProperties, IntegerFormat, ObjectType, ReferenceOr, Schema, SchemaKind, StringType,
-    Type, VariantOrUnknownOrEmpty,
+    Type, VariantOrUnknownOrEmpty
 };
 
 use crate::rust_object::{
@@ -16,7 +16,7 @@ use crate::spec::{
     as_data_array_item, as_object_enum_name, is_enum_with_just_empty_string, ExpansionResources,
 };
 use crate::types::{ComponentPath, RustIdent};
-use crate::args::args;
+use crate::args;
 
 #[derive(Copy, Clone, Debug)]
 pub struct Inference<'a> {
@@ -27,6 +27,7 @@ pub struct Inference<'a> {
     description: Option<&'a str>,
     title: Option<&'a str>,
     required: bool,
+    is_openapi_v31: bool,
 }
 
 impl<'a> Inference<'a> {
@@ -39,11 +40,17 @@ impl<'a> Inference<'a> {
             curr_ident: ident,
             id_path: None,
             title: None,
+            is_openapi_v31: false,
         }
     }
 
     pub fn can_borrow(mut self, can_borrow: bool) -> Self {
         self.can_borrow = can_borrow;
+        self
+    }
+
+    pub fn is_openapi_v31(mut self, v31: bool) -> Self {
+        self.is_openapi_v31 = v31;
         self
     }
 
@@ -101,6 +108,14 @@ impl<'a> Inference<'a> {
 
     pub fn infer_schema_type(&self, schema: &Schema) -> RustType {
         let base_type = self.title(schema.schema_data.title.as_deref()).infer_base_type(schema);
+        /*
+        if base_type == RustType::None {
+            if self.is_openapi_v31 {
+                base_type = RustType::json_value();
+            } else {
+                panic!("unhandled field type");
+            }
+        }*/
         let is_nullable = schema.schema_data.nullable;
         if !self.required || is_nullable {
             base_type.into_nullable()
@@ -160,6 +175,19 @@ impl<'a> Inference<'a> {
             SchemaKind::Type(Type::Object(typ)) => self.infer_object_typ(typ, field),
             SchemaKind::AnyOf { any_of: fields } | SchemaKind::OneOf { one_of: fields } => {
                 self.infer_any_or_one_of(fields, field)
+            }
+            SchemaKind::Any(any) => {
+                if !self.is_openapi_v31 || (any.properties.is_empty() && any.additional_properties.is_none()) {
+                    panic!("unhandled field type");
+                } else {
+                    self.infer_object_typ(&ObjectType {
+                        properties: any.properties.clone(),
+                        additional_properties: any.additional_properties.clone(),
+                        required: any.required.clone(),
+                        min_properties: any.min_properties,
+                        max_properties: any.max_properties,
+                    }, field)
+                }
             }
             _ => {
                 panic!("unhandled field type");

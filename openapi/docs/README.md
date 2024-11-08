@@ -1,16 +1,3 @@
-## format
-
-fn should_skip_request(op: &StripeOperation) -> bool {
-// TODO: what is the relevance of the `method_on` field? A small number of requests
-// use "collection" instead of "service", but the OpenAPI schema does not differentiate
-// so we just end up with duplicate requests if we don't skip like this
-
-method_on フィールドの関連性は何ですか？ごく一部のリクエストでは "service" の代わりに "collection" を使用していますが、OpenAPI スキーマではこれらを区別しないため、これをスキップしないと重複したリクエストが発生してしまいます。
-
--> 無くす
-
-
-
 # commands
 
 ```
@@ -24,10 +11,7 @@ docker run --rm \
     -i ./openapi.yaml \
     -o ./dist/client
 
-docker run \
-  -p 80:8080 \
-  -e SWAGGER_JSON=/src/openapi.json \
-  -v `pwd`/openapi.json:/src swaggerapi/swagger-ui
+docker run -p 8080:8080 -e SWAGGER_JSON=/src/openapi.json -v `pwd`/openapi.json:/src swaggerapi/swagger-ui
 ```
 
 # ボツ
@@ -45,10 +29,10 @@ docker run \
 
 ```
 docker run --rm \
-  -v ".:/tmp/" \
-  -w "/tmp/" \
+  -v ".:/" \
+  -w "/" \
   openapitools/openapi-generator-cli generate \
     -g openapi \
-    -i ./src/root.yaml \
+    -i ./root.json \
     -o ./dist
 ```

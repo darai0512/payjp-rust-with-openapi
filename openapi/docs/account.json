@@ -1,4 +1,9 @@
 {
+  "openapi": "3.0.3",
+  "info": {
+    "title": "PAY.JP account API",
+    "version": "1.0.0"
+  },
   "paths": {
     "/accounts": {
       "get": {
@@ -20,7 +25,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/error"
+                  "$ref": "./errors.json#/components/schemas/error"
                 }
               }
             }
@@ -37,8 +42,10 @@
         "properties": {
           "object": {
             "type": "string",
-            "description": "\"account\"の固定文字列",
-            "example": "account"
+            "description": "固定文字列",
+            "enum": [
+              "account"
+            ]
           },
           "id": {
             "type": "string",
@@ -59,7 +66,8 @@
             "$ref": "#/components/schemas/merchant"
           },
           "team_id": {
-            "type": ["string", "null"],
+            "type": "string",
+            "nullable": true,
             "description": "このアカウントに紐付くチームID"
           }
         },
@@ -71,8 +79,10 @@
         "properties": {
           "object": {
             "type": "string",
-            "description": "\"merchant\"の固定文字列",
-            "example": "merchant"
+            "description": "固定文字列",
+            "enum": [
+              "merchant"
+            ]
           },
           "id": {
             "type": "string",
@@ -86,22 +96,23 @@
           "brands_accepted": {
             "type": "array",
             "items": {
-              "type": "string"
+              "type": "string",
+              "enum": [
+                "Visa",
+                "MasterCard",
+                "JCB",
+                "American Express",
+                "Diners Club",
+                "Discover"
+              ]
             },
-            "description": "本番環境で利用可能なカードブランドのリスト",
-            "example": [
-              "Visa",
-              "MasterCard",
-              "JCB",
-              "American Express",
-              "Diners Club",
-              "Discover"
-            ]
+            "description": "本番環境で利用可能なカードブランドのリスト"
           },
           "currencies_supported": {
             "type": "array",
             "items": {
-              "type": "string"
+              "type": "string",
+              "enum": ["jpy"]
             },
             "description": "対応通貨のリスト",
             "example": ["jpy"]
@@ -109,14 +120,15 @@
           "default_currency": {
             "type": "string",
             "description": "3文字のISOコード（現状 \"jpy\" のみサポート）",
-            "example": "jpy"
+            "enum": ["jpy"]
           },
           "details_submitted": {
             "type": "boolean",
             "description": "本番環境申請情報が提出済みかどうか"
           },
           "business_type": {
-            "type": ["string", "null"],
+            "type": "string",
+            "nullable": true,
             "description": "業務形態"
           },
           "country": {
@@ -125,18 +137,20 @@
             "example": "JP"
           },
           "charge_type": {
-            "type": ["array", "null"],
+            "type": "array",
+            "nullable": true,
             "items": {
               "type": "string"
             },
             "description": "支払い方法種別のリスト"
           },
           "product_name": {
-            "type": ["string", "null"],
+            "type": "string",
+            "nullable": true,
             "description": "販売商品名"
           },
           "product_type": {
-            "type": ["array", "null"],
+            "type": "array", "nullable": true,
             "items": {
               "type": "string"
             },
@@ -147,12 +161,12 @@
             "description": "本番環境が有効かどうか"
           },
           "livemode_activated_at": {
-            "type": ["integer", "null"],
+            "type": "integer", "nullable": true,
             "format": "int64",
             "description": "本番環境が許可された日時のUTCタイムスタンプ"
           },
           "site_published": {
-            "type": ["boolean", "null"],
+            "type": "boolean", "nullable": true,
             "description": "申請対象のサイトがオープン済みかどうか"
           },
           "created": {
@@ -173,39 +187,6 @@
           "livemode_enabled",
           "created"
         ]
-      },
-      "error": {
-        "type": "object",
-        "description": "エラーオブジェクト",
-        "properties": {
-          "error": {
-            "type": "object",
-            "properties": {
-              "status": {
-                "type": "integer",
-                "description": "HTTPステータスコード"
-              },
-              "type": {
-                "type": "string",
-                "description": "エラーの種類"
-              },
-              "message": {
-                "type": "string",
-                "description": "エラーメッセージ"
-              },
-              "param": {
-                "type": ["string", "null"],
-                "description": "エラーに関連するパラメータ名"
-              },
-              "code": {
-                "type": ["string", "null"],
-                "description": "エラーコード"
-              }
-            },
-            "required": ["status", "type", "message"]
-          }
-        },
-        "required": ["error"]
       }
     }
   }

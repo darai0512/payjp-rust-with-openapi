@@ -256,11 +256,11 @@
             "description": "作成時刻のUTCタイムスタンプ"
           },
           "title": {
-            "type": ["string", "null"],
+            "type": "string", "nullable": true,
             "description": "取引明細のタイトル"
           },
           "tenant_id": {
-            "type": ["string", "null"],
+            "type": "string", "nullable": true,
             "description": "オブジェクトを所有するTenantのID"
           },
           "type": {
@@ -279,11 +279,11 @@
             "description": "更新時刻のUTCタイムスタンプ"
           },
           "term": {
-            "type": ["object", "null"],
+            "type": "object", "nullable": true,
             "description": "このStatementの生成元となったTermオブジェクト"
           },
           "balance_id": {
-            "type": ["string", "null"],
+            "type": "string", "nullable": true,
             "description": "このStatementが関連付けられているBalanceのID"
           },
           "items": {
@@ -376,11 +376,11 @@
                 "description": "エラーメッセージ"
               },
               "param": {
-                "type": ["string", "null"],
+                "type": "string", "nullable": true,
                 "description": "エラーに関連するパラメータ名"
               },
               "code": {
-                "type": ["string", "null"],
+                "type": "string", "nullable": true,
                 "description": "エラーコード"
               }
             },

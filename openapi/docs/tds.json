@@ -1,9 +1,8 @@
 {
-  "openapi": "3.0.0",
+  "openapi": "3.1.0",
   "info": {
     "title": "PAY.JP API",
-    "version": "1.0.0",
-    "description": "PAY.JP 3D Secure API specification in OpenAPI 3.0"
+    "version": "1.0.0"
   },
   "paths": {
     "/v1/tds/{resource_id}/start": {

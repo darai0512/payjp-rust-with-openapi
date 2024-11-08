@@ -543,25 +543,25 @@
             "description": "この顧客作成時のUTCタイムスタンプ"
           },
           "default_card": {
-            "type": ["string", "null"],
+            "type": "string", "nullable": true,
             "description": "支払いにデフォルトで使用されるカードのID"
           },
           "cards": {
             "$ref": "#/components/schemas/cardList"
           },
           "email": {
-            "type": ["string", "null"],
+            "type": "string", "nullable": true,
             "description": "メールアドレス"
           },
           "description": {
-            "type": ["string", "null"],
+            "type": "string", "nullable": true,
             "description": "概要"
           },
           "subscriptions": {
             "$ref": "#/components/schemas/subscriptionList"
           },
           "metadata": {
-            "type": ["object", "null"],
+            "type": "object", "nullable": true,
             "description": "キーバリューの任意データ",
             "additionalProperties": {
               "type": "string"
@@ -590,7 +590,7 @@
             "description": "カード作成時のタイムスタンプ"
           },
           "name": {
-            "type": ["string", "null"],
+            "type": "string", "nullable": true,
             "description": "カード保有者名"
           },
           "last4": {
@@ -618,7 +618,7 @@
             "description": "このクレジットカード番号に紐づく値"
           },
           "metadata": {
-            "type": ["object", "null"],
+            "type": "object", "nullable": true,
             "description": "キーバリューの任意データ",
             "additionalProperties": {
               "type": "string"
@@ -629,11 +629,11 @@
             "description": "トークン3Dセキュアの結果"
           },
           "email": {
-            "type": ["string", "null"],
+            "type": "string", "nullable": true,
             "description": "メールアドレス"
           },
           "phone": {
-            "type": ["string", "null"],
+            "type": "string", "nullable": true,
             "description": "E.164形式の電話番号"
           }
         },
@@ -860,11 +860,11 @@
                 "description": "エラーメッセージ"
               },
               "param": {
-                "type": ["string", "null"],
+                "type": "string", "nullable": true,
                 "description": "エラーに関連するパラメータ名"
               },
               "code": {
-                "type": ["string", "null"],
+                "type": "string", "nullable": true,
                 "description": "エラーコード"
               }
             },
