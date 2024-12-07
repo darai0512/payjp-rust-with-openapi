@@ -13,6 +13,7 @@ use crate::rust_type::RustType;
 use crate::spec_inference::Inference;
 use crate::types::{ComponentPath, RustIdent};
 use crate::visitor::{Visit, VisitMut};
+use crate::spec::Spec;
 
 #[derive(Debug, Copy, Clone, Hash, Eq, PartialEq)]
 pub struct CrateInfo {
@@ -47,15 +48,15 @@ impl CrateInfo {
 }
 
 #[derive(Debug, Clone)]
-pub struct StripeObject {
+pub struct PayjpObject {
     pub requests: Vec<RequestSpec>,
     pub resource: XResource,
-    pub data: StripeObjectData,
+    pub data: ObjectData,
     pub krate: Option<CrateInfo>,
     pub deduplicated_objects: IndexMap<RustIdent, DeduppedObject>,
 }
 
-impl StripeObject {
+impl PayjpObject {
     pub fn krate(&self) -> Option<CrateInfo> {
         self.krate
     }
@@ -181,7 +182,7 @@ impl StripeObject {
 }
 
 #[derive(Debug, Clone)]
-pub struct StripeObjectData {
+pub struct ObjectData {
     pub obj: RustObject,
     pub object_name: Option<String>,
     pub id_type: Option<RustType>,
@@ -191,14 +192,14 @@ pub fn parse_schema_as_rust_object(
     schema: &Schema,
     path: &ComponentPath,
     ident: &RustIdent,
-    v31: bool,
-) -> StripeObjectData {
+    spec: &Spec,
+) -> ObjectData {
     let not_deleted_path = path.as_not_deleted();
-    let infer_ctx = Inference::new(ident).is_openapi_v31(v31).id_path(&not_deleted_path).required(true);
+    let infer_ctx = Inference::new(ident).spec(spec).skip_list(true).id_path(&not_deleted_path).required(true);
     let typ = infer_ctx.infer_schema_type(schema);
     let Some((mut rust_obj, _)) = typ.into_object() else {
         // if let Some(RustObject::Struct(struct_)) = typ.into_object() {
-        //     return StripeObjectData { obj: RustObject::Struct(struct_), object_name: None, id_type: None };
+        //     return ObjectData { obj: RustObject::Struct(struct_), object_name: None, id_type: None };
         // }
         panic!("Unexpected top level schema type for {}", path);
     };
@@ -230,13 +231,13 @@ pub fn parse_schema_as_rust_object(
             if let Some(obj_name) = &object_name {
                 struct_.object_field = Some(obj_name.clone());
             }
-            StripeObjectData { obj: rust_obj, object_name, id_type }
+            ObjectData { obj: rust_obj, object_name, id_type }
         }
         RustObject::Enum(_) => {
             // TODO: could validate that this enum holds what we expect from a top-level component,
             // namely a union of references to other components. We also are implicitly assuming
             // these components have ids
-            StripeObjectData { obj: rust_obj, object_name: None, id_type: Some(RustType::string()) }
+            ObjectData { obj: rust_obj, object_name: None, id_type: Some(RustType::string()) }
         }
         RustObject::FieldlessEnum(_) => panic!("Unexpected top level schema type"),
     }

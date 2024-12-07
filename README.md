@@ -33,7 +33,9 @@ expandable: 普段はnullstringなIDを返すが、expand=...を指定するとo
 
 - jsonnet時にファイル参照を消したい. list refだけに(itemあるから無理？)
 
-top level listはpanicされる on parse_schema_as_rust_object()
+- top level listはpanicされる on parse_schema_as_rust_object()
+- RustType::as_rust_object() = RustObject
+- RustObject::get_struct_field("object") RustType
 
 `obj` is borrowed here
 |                 returns a value referencing data owned by the current function

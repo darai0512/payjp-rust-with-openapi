@@ -61,12 +61,9 @@ impl ComponentPath {
         Self::new(root_obj.into())
     }
 
+    // todo
     pub fn as_not_deleted(&self) -> Self {
         Self::new(self.0.trim_start_matches("deleted_").to_string())
-    }
-
-    pub fn is_deleted_obj(&self) -> bool {
-        self.0.starts_with("deleted_")
     }
 }
 

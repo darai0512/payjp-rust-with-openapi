@@ -1,4 +1,0 @@
-cache/
-out*/
-# For any graphviz files
-*.svg

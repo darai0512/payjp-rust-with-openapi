@@ -15,3 +15,8 @@ lcov.info
 .vscode
 
 openapi.json
+**/dist/*
+**/test/*
+!**/dist/.keep
+**/cache/
+**/out*/

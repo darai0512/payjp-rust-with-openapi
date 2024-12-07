@@ -10,7 +10,7 @@ use crate::object_writing::{gen_obj, gen_requests};
 use crate::rust_object::{ObjectKind, ObjectMetadata};
 use crate::spec::Spec;
 use crate::spec_inference::infer_doc_comment;
-use crate::resource_object::StripeObject;
+use crate::resource_object::PayjpObject;
 use crate::templates::cargo_toml::gen_crate_toml;
 use crate::templates::utils::write_top_level_doc_comment;
 use crate::utils::{append_to_file, write_to_file};
@@ -101,7 +101,7 @@ impl CodeGen {
         Ok(())
     }
 
-    fn write_component_requests(&self, comp: &StripeObject) -> anyhow::Result<()> {
+    fn write_component_requests(&self, comp: &PayjpObject) -> anyhow::Result<()> {
         let req_content = gen_requests(&comp.requests, &self.components);
 
         let req_file_content = formatdoc! {
@@ -125,7 +125,7 @@ impl CodeGen {
     }
 
     #[tracing::instrument(level = "debug", skip_all, fields(path = %comp.path()))]
-    fn write_component(&self, comp: &StripeObject) -> anyhow::Result<()> {
+    fn write_component(&self, comp: &PayjpObject) -> anyhow::Result<()> {
         let struct_defs = self.gen_struct_definitions_for_component(comp);
         if !comp.has_requests() || comp.types_split_from_requests() {
             write_to_file(struct_defs, comp.get_types_content_path())?;
@@ -181,7 +181,7 @@ impl CodeGen {
         Ok(())
     }
 
-    fn gen_struct_definitions_for_component(&self, comp: &StripeObject) -> String {
+    fn gen_struct_definitions_for_component(&self, comp: &PayjpObject) -> String {
         let base_obj = comp.rust_obj();
         let schema = self.spec.get_component_schema(comp.path());
         let doc_comment = infer_doc_comment(schema);

@@ -1,6 +1,6 @@
 [[crates]]
 name = "core"
-paths = ["token", "term"]
+paths = ["term"]
 packages = ["apps"]
 description = "test core"
 

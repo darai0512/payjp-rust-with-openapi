@@ -35,7 +35,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "./errors.json#/components/schemas/error"
+                  "$ref": "./base.json#/components/schemas/error"
                 }
               }
             }
@@ -46,10 +46,10 @@
         "summary": "顧客リストを取得",
         "description": "生成した顧客情報のリストを取得します。リストは、直近で生成された順番に取得されます。",
         "parameters": [
-          {"$ref": "./paginations.json#/components/parameters/limit"},
-          {"$ref": "./paginations.json#/components/parameters/offset"},
-          {"$ref": "./paginations.json#/components/parameters/since"},
-          {"$ref": "./paginations.json#/components/parameters/until"}
+          {"$ref": "./base.json#/components/parameters/limit"},
+          {"$ref": "./base.json#/components/parameters/offset"},
+          {"$ref": "./base.json#/components/parameters/since"},
+          {"$ref": "./base.json#/components/parameters/until"}
         ],
         "responses": {
           "200": {
@@ -58,7 +58,7 @@
               "application/json": {
                 "schema": {
                   "allOf": [
-                    {"$ref": "./paginations.json#/components/schemas/list"},
+                    {"$ref": "./base.json#/components/schemas/list"},
                     {
                       "properties": {
                         "data": {
@@ -78,7 +78,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "./errors.json#/components/schemas/error"
+                  "$ref": "./base.json#/components/schemas/error"
                 }
               }
             }
@@ -118,7 +118,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "./errors.json#/components/schemas/error"
+                  "$ref": "./base.json#/components/schemas/error"
                 }
               }
             }
@@ -165,7 +165,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "./errors.json#/components/schemas/error"
+                  "$ref": "./base.json#/components/schemas/error"
                 }
               }
             }
@@ -193,7 +193,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "./common.json#/components/schemas/deleteResponse"
+                  "$ref": "./base.json#/components/schemas/deleteResponse"
                 }
               }
             }
@@ -203,7 +203,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "./errors.json#/components/schemas/error"
+                  "$ref": "./base.json#/components/schemas/error"
                 }
               }
             }
@@ -252,7 +252,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "./errors.json#/components/schemas/error"
+                  "$ref": "./base.json#/components/schemas/error"
                 }
               }
             }
@@ -263,10 +263,10 @@
         "summary": "顧客のカードリストを取得",
         "description": "顧客の保持しているカードリストを取得します。リストは、直近で生成された順番に取得されます。",
         "parameters": [
-          {"$ref": "./paginations.json#/components/parameters/limit"},
-          {"$ref": "./paginations.json#/components/parameters/offset"},
-          {"$ref": "./paginations.json#/components/parameters/since"},
-          {"$ref": "./paginations.json#/components/parameters/until"}
+          {"$ref": "./base.json#/components/parameters/limit"},
+          {"$ref": "./base.json#/components/parameters/offset"},
+          {"$ref": "./base.json#/components/parameters/since"},
+          {"$ref": "./base.json#/components/parameters/until"}
         ],
         "responses": {
           "200": {
@@ -275,7 +275,7 @@
               "application/json": {
                 "schema": {
                   "allOf": [
-                    {"$ref": "./paginations.json#/components/schemas/list"},
+                    {"$ref": "./base.json#/components/schemas/list"},
                     {
                       "properties": {
                         "data": {
@@ -295,7 +295,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "./errors.json#/components/schemas/error"
+                  "$ref": "./base.json#/components/schemas/error"
                 }
               }
             }
@@ -345,7 +345,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "./errors.json#/components/schemas/error"
+                  "$ref": "./base.json#/components/schemas/error"
                 }
               }
             }
@@ -380,7 +380,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "./errors.json#/components/schemas/error"
+                  "$ref": "./base.json#/components/schemas/error"
                 }
               }
             }
@@ -396,7 +396,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "./common.json#/components/schemas/deleteResponse"
+                  "$ref": "./base.json#/components/schemas/deleteResponse"
                 }
               }
             }
@@ -406,7 +406,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "./errors.json#/components/schemas/error"
+                  "$ref": "./base.json#/components/schemas/error"
                 }
               }
             }
@@ -446,7 +446,7 @@
           },
           "cards": {
             "allOf": [
-              {"$ref": "./paginations.json#/components/schemas/list"},
+              {"$ref": "./base.json#/components/schemas/list"},
               {
                 "properties": {
                   "data": {
@@ -468,7 +468,7 @@
           },
           "subscriptions": {
             "allOf": [
-              {"$ref": "./paginations.json#/components/schemas/list"},
+              {"$ref": "./base.json#/components/schemas/list"},
               {
                 "properties": {
                   "data": {

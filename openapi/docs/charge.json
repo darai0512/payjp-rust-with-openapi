@@ -105,7 +105,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "./errors.json#/components/schemas/error"
+                  "$ref": "./base.json#/components/schemas/error"
                 }
               }
             }
@@ -116,10 +116,10 @@
         "summary": "支払いリストを取得",
         "description": "生成した支払い情報のリストを取得します。",
         "parameters": [
-          {"$ref": "./paginations.json#/components/parameters/limit"},
-          {"$ref": "./paginations.json#/components/parameters/offset"},
-          {"$ref": "./paginations.json#/components/parameters/since"},
-          {"$ref": "./paginations.json#/components/parameters/until"},
+          {"$ref": "./base.json#/components/parameters/limit"},
+          {"$ref": "./base.json#/components/parameters/offset"},
+          {"$ref": "./base.json#/components/parameters/since"},
+          {"$ref": "./base.json#/components/parameters/until"},
           {
             "name": "customer",
             "in": "query",
@@ -160,7 +160,7 @@
               "application/json": {
                 "schema": {
                   "allOf": [
-                    {"$ref": "./paginations.json#/components/schemas/list"},
+                    {"$ref": "./base.json#/components/schemas/list"},
                     {
                       "properties": {
                         "data": {
@@ -180,7 +180,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "./errors.json#/components/schemas/error"
+                  "$ref": "./base.json#/components/schemas/error"
                 }
               }
             }
@@ -220,7 +220,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "./errors.json#/components/schemas/error"
+                  "$ref": "./base.json#/components/schemas/error"
                 }
               }
             }
@@ -255,7 +255,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "./errors.json#/components/schemas/error"
+                  "$ref": "./base.json#/components/schemas/error"
                 }
               }
             }
@@ -295,7 +295,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "errors.json#/components/schemas/error"
+                  "$ref": "./base.json#/components/schemas/error"
                 }
               }
             }
@@ -344,7 +344,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "errors.json#/components/schemas/error"
+                  "$ref": "./base.json#/components/schemas/error"
                 }
               }
             }
@@ -393,7 +393,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "errors.json#/components/schemas/error"
+                  "$ref": "./base.json#/components/schemas/error"
                 }
               }
             }
@@ -442,7 +442,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "errors.json#/components/schemas/error"
+                  "$ref": "./base.json#/components/schemas/error"
                 }
               }
             }

@@ -1,6 +1,74 @@
 {
+  "openapi": "3.1.0",
+  "info": {
+    "title": "PAY.JP API",
+    "description": "https://pay.jp/docs/api",
+    "version": "20241101T12",
+    "summary": "PAY.JP API (unofficial)"
+  },
+  "servers": [
+    {
+      "url": "https://api.pay.jp/v1"
+    }
+  ],
   "components": {
     "schemas": {
+      "list": {
+        "type": "object",
+        "description": "Listオブジェクト",
+        "required": [
+          "object",
+          "data",
+          "url",
+          "has_more",
+          "count"
+        ],
+        "properties": {
+          "object": {
+            "type": "string",
+            "enum": [
+              "list"
+            ],
+            "description": "固定文字列"
+          },
+          "url": {
+            "type": "string",
+            "description": "APIエンドポイントのURL"
+          },
+          "has_more": {
+            "type": "boolean",
+            "description": "さらにデータがあるかどうか"
+          },
+          "data": {
+            "type": "array",
+            "description": "オブジェクトの配列",
+            "items": {
+              "$dynamicRef": "#payjpObject"
+            }
+          },
+          "count": {
+            "type": "integer",
+            "description": "取得されたオブジェクトの総数"
+          }
+        }
+      },
+      "deleteResponse": {
+        "type": "object",
+        "properties": {
+          "deleted": {
+            "type": "boolean",
+            "description": "`true`が入ります"
+          },
+          "id": {
+            "type": "string",
+            "description": "削除したオブジェクトのID"
+          },
+          "livemode": {
+            "type": "boolean",
+            "description": "本番環境かどうか"
+          }
+        }
+      },
       "error": {
         "type": "object",
         "description": "エラーオブジェクト",
@@ -11,7 +79,15 @@
               "status": {
                 "type": "integer",
                 "description": "HTTPステータスコードと同様の値が数値型で入ります",
-                "enum": [200, 400, 401, 402, 404, 429, 500]
+                "enum": [
+                  200,
+                  400,
+                  401,
+                  402,
+                  404,
+                  429,
+                  500
+                ]
               },
               "type": {
                 "type": "string",
@@ -127,19 +203,72 @@
                 ]
               },
               "param": {
-                "type": ["string"],
+                "type": [
+                  "string"
+                ],
                 "nullable": true,
                 "description": "エラーに関連するパラメータ名"
               },
               "charge": {
-                "type": ["string"],
+                "type": [
+                  "string"
+                ],
                 "description": "エラーに関連する支払いID"
               }
             },
-            "required": ["status", "type", "message"]
+            "required": [
+              "status",
+              "type",
+              "message"
+            ]
           }
         },
-        "required": ["error"]
+        "required": [
+          "error"
+        ]
+      }
+    },
+    "parameters": {
+      "limit": {
+        "name": "limit",
+        "in": "query",
+        "required": false,
+        "description": "取得するデータ数の最大値(1~100まで)。指定がない場合は 10 となる。",
+        "schema": {
+          "type": "integer",
+          "default": 10,
+          "minimum": 1,
+          "maximum": 100
+        }
+      },
+      "offset": {
+        "name": "offset",
+        "in": "query",
+        "required": false,
+        "description": "基準点からのデータ取得を行う開始位置。指定がない場合は 0 となる。",
+        "schema": {
+          "type": "integer",
+          "default": 0,
+          "minimum": 0
+        }
+      },
+      "since": {
+        "name": "since",
+        "in": "query",
+        "description": "ここに指定したタイムスタンプ以降に作成されたデータを取得",
+        "schema": {
+          "type": "integer",
+          "format": "int64"
+        }
+      },
+      "until": {
+        "name": "until",
+        "in": "query",
+        "description": "ここに指定したタイムスタンプ以前に作成されたデータを取得",
+        "schema": {
+          "type": "integer",
+          "format": "int64"
+        }
       }
     }
   }

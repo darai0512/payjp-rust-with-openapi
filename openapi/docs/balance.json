@@ -37,7 +37,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "./errors.json#/components/schemas/error"
+                  "$ref": "./base.json#/components/schemas/error"
                 }
               }
             }
@@ -86,7 +86,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "./errors.json#/components/schemas/error"
+                  "$ref": "./base.json#/components/schemas/error"
                 }
               }
             }
@@ -97,10 +97,10 @@
     "/balances": {
       "get": {
         "parameters": [
-          {"$ref": "./paginations.json#/components/parameters/limit"},
-          {"$ref": "./paginations.json#/components/parameters/offset"},
-          {"$ref": "./paginations.json#/components/parameters/since"},
-          {"$ref": "./paginations.json#/components/parameters/until"},
+          {"$ref": "./base.json#/components/parameters/limit"},
+          {"$ref": "./base.json#/components/parameters/offset"},
+          {"$ref": "./base.json#/components/parameters/since"},
+          {"$ref": "./base.json#/components/parameters/until"},
           {
             "name": "since_due_date",
             "in": "query",
@@ -169,7 +169,7 @@
                 "schema": {
                   "allOf": [
                     {
-                      "$ref": "./paginations.json#/components/schemas/list"
+                      "$ref": "./base.json#/components/schemas/list"
                     }
                   ],
                   "properties": {
@@ -189,7 +189,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "./errors.json#/components/schemas/error"
+                  "$ref": "./base.json#/components/schemas/error"
                 }
               }
             }

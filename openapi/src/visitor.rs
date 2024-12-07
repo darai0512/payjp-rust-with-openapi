@@ -1,6 +1,6 @@
 use crate::rust_object::{ObjectMetadata, ObjectUsage, RustObject};
 use crate::rust_type::RustType;
-use crate::resource_object::{RequestSpec, StripeObject};
+use crate::resource_object::{RequestSpec, PayjpObject};
 
 pub trait Visit<'a> {
     fn visit_obj(
@@ -28,7 +28,7 @@ pub trait Visit<'a> {
         req.visit(self);
     }
 
-    fn visit_object(&mut self, obj: &'a StripeObject)
+    fn visit_object(&mut self, obj: &'a PayjpObject)
     where
         Self: Sized,
     {
@@ -62,7 +62,7 @@ pub trait VisitMut {
         req.visit_mut(self);
     }
 
-    fn visit_stripe_object_mut(&mut self, obj: &mut StripeObject)
+    fn visit_stripe_object_mut(&mut self, obj: &mut PayjpObject)
     where
         Self: Sized,
     {

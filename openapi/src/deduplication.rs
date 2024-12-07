@@ -4,7 +4,7 @@ use tracing::debug;
 
 use crate::rust_object::{ObjectKind, ObjectMetadata, ObjectUsage, RustObject};
 use crate::rust_type::{PathToType, RustType};
-use crate::resource_object::StripeObject;
+use crate::resource_object::PayjpObject;
 use crate::types::{ComponentPath, RustIdent};
 use crate::visitor::{Visit, VisitMut};
 
@@ -149,7 +149,7 @@ fn infer_dedupped_object_for(
 }
 
 #[tracing::instrument(level = "debug", skip(comp), fields(path = %comp.path()))]
-pub fn deduplicate_types(comp: &mut StripeObject) -> IndexMap<RustIdent, DeduppedObject> {
+pub fn deduplicate_types(comp: &mut PayjpObject) -> IndexMap<RustIdent, DeduppedObject> {
     let mut objs = IndexMap::new();
     let comp_path = comp.path().clone();
 

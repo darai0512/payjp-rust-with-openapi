@@ -25,7 +25,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "./errors.json#/components/schemas/error"
+                  "$ref": "./base.json#/components/schemas/error"
                 }
               }
             }

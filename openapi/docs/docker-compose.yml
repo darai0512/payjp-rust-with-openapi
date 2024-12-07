@@ -1,11 +1,27 @@
+name: payjp-rust
 services:
+  jsonnet:
+    image: bitnami/jsonnet
+    volumes:
+      - .:/tmp/
+    command: /tmp/root.jsonnet -o /tmp/openapi.json
+    healthcheck:
+      test: [ "CMD", "ls", "/tmp/openapi.json" ]
+      interval: 10s
+      timeout: 60s
+      retries: 6
+
   swagger-editor:
     image: swaggerapi/swagger-editor:next-v5-unprivileged
     ports:
       - "8001:8080"
 
+  # http://localhost:8002
   swagger-ui:
     image: swaggerapi/swagger-ui
+    depends_on:
+      jsonnet:
+        condition: service_healthy
     ports:
       - "8002:8080"
     volumes:
@@ -15,15 +31,22 @@ services:
 
   prism:
     image: stoplight/prism:master
+    depends_on:
+      jsonnet:
+        condition: service_healthy
     ports:
       - "8003:4010"
     command: mock -h 0.0.0.0 /tmp/openapi.json
     volumes:
       - .:/tmp/
 
+  # jsonnetから生成したopenapi.jsonのvalidation目的
   gen:
     image: openapitools/openapi-generator-cli
-    command: generate -g openapi -i /tmp/openapi.json -o /tmp/dist
+    depends_on:
+      jsonnet:
+        condition: service_healthy
+    command: generate -g openapi -i /tmp/openapi.json -o /tmp/test
     volumes:
       - .:/tmp/
-    # watch error log by `docker compose logs -f gen`
+    # `-g rust` はopenapi v2のみ対応

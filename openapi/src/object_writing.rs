@@ -5,7 +5,7 @@ use crate::printable::Lifetime;
 use crate::rust_object::EnumOfObjects::ObjectUnion;
 use crate::rust_object::{as_enum_of_objects, ObjectMetadata, ObjectUsage, RustObject};
 use crate::rust_type::RustType;
-use crate::resource_object::{RequestSpec, StripeObject};
+use crate::resource_object::{RequestSpec, PayjpObject};
 use crate::templates::object_trait::{write_object_trait, write_object_trait_for_enum};
 use crate::templates::utils::write_doc_comment;
 use crate::templates::ObjectWriter;
@@ -81,7 +81,7 @@ impl Components {
 pub fn gen_obj(
     obj: &RustObject,
     meta: &ObjectMetadata,
-    comp: &StripeObject,
+    comp: &PayjpObject,
     components: &Components,
 ) -> String {
     let mut out = String::with_capacity(128);

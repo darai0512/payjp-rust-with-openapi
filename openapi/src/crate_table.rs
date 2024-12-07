@@ -2,7 +2,7 @@ use tabled::settings::Style;
 use tabled::{Table, Tabled};
 
 use crate::components::Components;
-use crate::resource_object::StripeObject;
+use crate::resource_object::PayjpObject;
 use crate::utils::write_to_file;
 use crate::args;
 
@@ -38,7 +38,7 @@ pub fn write_crate_table(components: &Components) -> anyhow::Result<()> {
     Ok(())
 }
 
-fn name_cell(obj: &StripeObject) -> String {
+fn name_cell(obj: &PayjpObject) -> String {
     let ident = obj.ident();
     format!("[{ident}]({})", args.api_docs_url)
 }

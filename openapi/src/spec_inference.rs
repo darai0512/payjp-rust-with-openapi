@@ -3,6 +3,7 @@ use std::fmt::Write;
 
 use anyhow::bail;
 use heck::ToSnakeCase;
+use indexmap::IndexMap;
 use openapiv3::{
     AdditionalProperties, IntegerFormat, ObjectType, ReferenceOr, Schema, SchemaKind, StringType,
     Type, VariantOrUnknownOrEmpty
@@ -12,7 +13,7 @@ use crate::rust_object::{
     EnumVariant, FieldlessVariant, ObjectMetadata, RustObject, Struct, StructField, Visibility,
 };
 use crate::rust_type::{ExtType, IntType, RustType, SimpleType};
-use crate::spec::{as_data_array_item, as_object_enum_name, as_object_type, is_enum_with_just_empty_string};
+use crate::spec::{Spec, as_first_enum_value, as_data_array_item, as_object_enum_name, is_enum_with_just_empty_string};
 use crate::types::{ComponentPath, RustIdent};
 use crate::args;
 
@@ -25,7 +26,8 @@ pub struct Inference<'a> {
     description: Option<&'a str>,
     title: Option<&'a str>,
     required: bool,
-    is_openapi_v31: bool,
+    spec: Option<&'a Spec>,
+    skip_list: bool,
 }
 
 impl<'a> Inference<'a> {
@@ -38,7 +40,8 @@ impl<'a> Inference<'a> {
             curr_ident: ident,
             id_path: None,
             title: None,
-            is_openapi_v31: false,
+            spec: None,
+            skip_list: false,
         }
     }
 
@@ -47,8 +50,13 @@ impl<'a> Inference<'a> {
         self
     }
 
-    pub fn is_openapi_v31(mut self, v31: bool) -> Self {
-        self.is_openapi_v31 = v31;
+    pub fn spec(mut self, spec: &'a Spec) -> Self {
+        self.spec = Some(spec);
+        self
+    }
+
+    pub fn skip_list(mut self, skip_list: bool) -> Self {
+        self.skip_list = skip_list;
         self
     }
 
@@ -105,34 +113,13 @@ impl<'a> Inference<'a> {
     }
 
     pub fn infer_schema_type(&self, schema: &Schema) -> RustType {
-        let base_type = self.title(schema.schema_data.title.as_deref()).infer_base_type(schema);
+        let base_type = self.infer_base_type(schema);
         let is_nullable = schema.schema_data.nullable;
         if !self.required || is_nullable {
             base_type.into_nullable()
         } else {
             base_type
         }
-    }
-
-    fn should_infer_as_id_type(&self) -> bool {
-        let Some(desc) = self.description else {
-            return false;
-        };
-        if desc.starts_with("A cursor for use in pagination")
-            || desc.starts_with("An object ID cursor")
-        {
-            return true;
-        }
-        if self.field_name == Some("id")
-            && (desc.starts_with("Unique identifier")
-                || desc.starts_with("The ID of the")
-                || desc.starts_with("The identifier for the")
-                || desc.starts_with("The [ID of the"))
-        {
-            return true;
-        }
-
-        false
     }
 
     fn infer_bool_type(&self) -> RustType {
@@ -167,91 +154,68 @@ impl<'a> Inference<'a> {
                 self.infer_any_or_one_of(fields)
             }
             SchemaKind::AllOf { all_of: fields }  => {
-                let a = fields[1].as_item().unwrap();
-                let b = match &a.schema_kind {
-                    SchemaKind::Type(Type::Object(obj)) => obj,
-                    SchemaKind::Any(any) => {
-                        let d = &ObjectType {
-                            properties: any.properties.clone(),
-                            additional_properties: any.additional_properties.clone(),
-                            required: any.required.clone(),
-                            min_properties: any.min_properties.clone(),
-                            max_properties: any.max_properties.clone(),
-                        };
-                        let dd = as_data_array_item(d).unwrap();
-                        let element_type = self.infer_schema_or_ref_type(dd);
-
-                        &ObjectType {
-                            properties: any.properties.clone(),
-                            additional_properties: any.additional_properties.clone(),
-                            required: any.required.clone(),
-                            min_properties: any.min_properties.clone(),
-                            max_properties: any.max_properties.clone(),
-                        }
-                    },
-                    _ => {
-                        panic!("unhandled field type");
+                let mut map = IndexMap::new();
+                let mut requireds = vec![];
+                for option in fields {
+                    let item = match option {
+                        ReferenceOr::Reference { reference } => {
+                            let schema_path = ComponentPath::from_reference(reference);
+                            self.spec.unwrap().get_component_schema(&schema_path)
+                        },
+                        ReferenceOr::Item(item) => item
+                    };
+                    match &item.schema_kind {
+                        SchemaKind::Type(Type::Object(obj)) => {
+                            requireds.extend(&obj.required);
+                            map.extend(obj.properties.clone().into_iter());
+                        },
+                        SchemaKind::Any(any) => {
+                            requireds.extend(&any.required);
+                            map.extend(any.properties.clone().into_iter());
+                        },
+                        _ => {panic!("unhandled field type");},
                     }
-                };
-                let a = fields[0].as_item().unwrap();
-                let b = match &a.schema_kind {
-                    SchemaKind::Type(Type::Object(obj)) => obj,
-                    SchemaKind::Any(any) => {
-                        let b2 = match any.properties.get("data").unwrap() {
-                            ReferenceOr::Reference { reference } => reference,
-                            ReferenceOr::Item(item) => {
-                                let a = &**item;
-                                let bbb = match &a.schema_kind {
-                                    SchemaKind::Type(Type::Array(typ)) => {
-                                        let element = typ.items.as_ref().expect("Array type had no items field");
-                                        let c = element.as_item();
-                                        c
-                                    },
-                                    _ => {todo!()}
-                                };
-                                // let ccc = self.infer_base_type(bbb);
-                                "Hoge"
-                            }
-                        };
-                        // let b3 = any.properties.get("data").unwrap().as_item();
-                        let d = &ObjectType {
-                            properties: any.properties.clone(),
-                            additional_properties: any.additional_properties.clone(),
-                            required: any.required.clone(),
-                            min_properties: any.min_properties.clone(),
-                            max_properties: any.max_properties.clone(),
-                        };
-                        let dd = as_data_array_item(d).unwrap();
-                        let element_type = self.infer_schema_or_ref_type(dd); //SchemaKind::Any(any)でpanicさせない工夫
-
-                        &ObjectType {
-                            properties: any.properties.clone(),
-                            additional_properties: any.additional_properties.clone(),
-                            required: any.required.clone(),
-                            min_properties: any.min_properties.clone(),
-                            max_properties: any.max_properties.clone(),
-                        }
-                    },
-                    _ => {
-                        panic!("unhandled field type");
-                    }
-                };
-                // AllOf -> type::list で十分？他の
-                self.infer_object_typ(b, field)
+                }
+                // infer_object_typ()
+                let obj_enum_name = as_first_enum_value(map.get("object").unwrap().as_item().unwrap());
+                if Some("list") == obj_enum_name.as_deref() && !self.skip_list {
+                    let schema = map.get("data").unwrap().as_item().unwrap();
+                    let element = if let SchemaKind::Type(Type::Array(typ)) = &schema.schema_kind {
+                        typ.items.as_ref()
+                    } else {
+                        None
+                    };
+                    let element_type = self.required(true).infer_schema_or_ref_type(element.unwrap());
+                    return RustType::list(element_type)
+                }
+                let mut fields2 = vec![];
+                let next_ident = self.next_ident();
+                for (prop_field_name, field_spec) in &map {
+                    let is_required = requireds.contains(&prop_field_name);
+                    let field_desc =
+                        field_spec.as_item().and_then(|i| i.schema_data.description.as_deref());
+                    fields2.push(
+                        self.required(is_required)
+                            .curr_ident(&next_ident)
+                            .maybe_description(field_desc)
+                            .build_struct_field(prop_field_name, field_spec),
+                    );
+                }
+                self.build_object_type(RustObject::Struct(Struct::new(fields2)))
             }
             SchemaKind::Any(any) => {
-                if !self.is_openapi_v31 || (any.properties.is_empty() && any.additional_properties.is_none() &&
+                // openapiv3だとAllOf判定されずAnyになるケースがあるためAllOf変換する
+                if !self.spec.unwrap().is_openapi_v31() || (any.properties.is_empty() && any.additional_properties.is_none() &&
                     self.field_name != Some("data")) {
                     panic!("unhandled field type");
-                } else {
-                    self.infer_object_typ(&ObjectType {
-                        properties: any.properties.clone(),
-                        additional_properties: any.additional_properties.clone(),
-                        required: any.required.clone(),
-                        min_properties: any.min_properties.clone(),
-                        max_properties: any.max_properties.clone(),
-                    }, field)
                 }
+                self.infer_object_typ(&ObjectType {
+                    properties: any.properties.clone(),
+                    additional_properties: any.additional_properties.clone(),
+                    required: any.required.clone(),
+                    min_properties: any.min_properties.clone(),
+                    max_properties: any.max_properties.clone(),
+                }, field)
             }
             _ => {
                 panic!("unhandled field type");
@@ -273,7 +237,7 @@ impl<'a> Inference<'a> {
         }
          */
 
-        if self.should_infer_as_id_type() {
+        if self.field_name == Some("id") { // todo x-searchable true
             if let Some(id_path) = self.id_path {
                 return RustType::object_id(id_path.clone(), self.can_borrow);
             }
@@ -288,7 +252,7 @@ impl<'a> Inference<'a> {
 
     fn infer_object_typ(&self, typ: &ObjectType, field: &Schema) -> RustType {
         let obj_enum_name = as_object_enum_name(field);
-        if Some("list") == obj_enum_name.as_deref() {
+        if Some("list") == obj_enum_name.as_deref() && !self.skip_list {
             let element = as_data_array_item(typ).unwrap_or_else(|| {
                 panic!("Expected to find array item but found {:?}", field.schema_kind)
             });
@@ -336,12 +300,9 @@ impl<'a> Inference<'a> {
             .iter()
             .filter(|field| !is_enum_with_just_empty_string(field))
             .collect::<Vec<_>>();
+        // fields[0].as_item().and_then(|s| s.schema_data.title.as_deref()) == Some("range_query_specs")
         if fields.len() == 1 {
             self.infer_schema_or_ref_type(fields[0])
-        } else if fields[0].as_item().and_then(|s| s.schema_data.title.as_deref())
-            == Some("range_query_specs")
-        {
-            RustType::ext(ExtType::RangeQueryTs)
         } else {
             let enum_ = self.build_enum_variants(fields).expect("Could not build enum with fields");
             self.build_object_type(RustObject::Enum(enum_))

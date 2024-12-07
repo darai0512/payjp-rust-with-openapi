@@ -16,7 +16,7 @@ use crate::rust_object::{ObjectKind, ObjectUsage, RustObject};
 use crate::rust_type::{Container, PathToType, RustType};
 use crate::spec::Spec;
 use crate::resource_object::{
-    parse_schema_as_rust_object, CrateInfo, OperationType, RequestSpec, StripeObject,
+    parse_schema_as_rust_object, CrateInfo, OperationType, RequestSpec, PayjpObject,
     XOperation, XResource,
 };
 use crate::types::{ComponentPath, RustIdent};
@@ -32,7 +32,7 @@ pub struct TypeSpec {
 }
 
 pub struct Components {
-    pub components: IndexMap<ComponentPath, StripeObject>,
+    pub components: IndexMap<ComponentPath, PayjpObject>,
     pub extra_types: IndexMap<RustIdent, TypeSpec>,
 }
 
@@ -50,12 +50,12 @@ impl PathInfo {
 
 impl Components {
     #[track_caller]
-    pub fn get(&self, path: &ComponentPath) -> &StripeObject {
+    pub fn get(&self, path: &ComponentPath) -> &PayjpObject {
         &self.components[path]
     }
 
     #[track_caller]
-    pub fn get_mut(&mut self, path: &ComponentPath) -> &mut StripeObject {
+    pub fn get_mut(&mut self, path: &ComponentPath) -> &mut PayjpObject {
         &mut self.components[path]
     }
 
@@ -256,7 +256,7 @@ pub fn get_components(spec: &Spec) -> anyhow::Result<Components> {
         let schema = spec.get_component_schema(&path);
 
         let resource = XResource::from_schema(schema, path.clone())?;
-        let data = parse_schema_as_rust_object(schema, &path, resource.ident(), spec.is_openapi_v31());
+        let data = parse_schema_as_rust_object(schema, &path, resource.ident(), spec);
         if let Some(obj_name) = &data.object_name {
             if let Some(id_typ) = data.id_type.as_ref().and_then(|t| t.as_id_or_opt_id_path()) {
                 // We will hit duplicate object names from e.g. `account` and `deleted_account`, but sanity check nothing
@@ -275,7 +275,7 @@ pub fn get_components(spec: &Spec) -> anyhow::Result<Components> {
     for (path, data) in obj_map {
         let resource = resource_map.get(&path).unwrap();
         let schema = spec.get_component_schema(&path);
-        let stripe_reqs: Vec<XOperation> =
+        let x_reqs: Vec<XOperation> =
             if let Some(val) = schema.schema_data.extensions.get("x-operations") {
                 serde_json::from_value(val.clone())?
             } else {
@@ -294,10 +294,10 @@ pub fn get_components(spec: &Spec) -> anyhow::Result<Components> {
             .or_else(|| maybe_use_hardcoded_crate_assignment(&path))
             .map(CrateInfo::new);
 
-        let reqs = parse_requests(stripe_reqs, spec, resource.ident(), &id_map)?;
+        let reqs = parse_requests(x_reqs, spec, resource.ident(), &id_map)?;
         components.insert(
             path,
-            StripeObject {
+            PayjpObject {
                 requests: reqs,
                 resource: resource.clone(),
                 data,

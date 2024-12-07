@@ -10,36 +10,12 @@ local tds = import 'tds.json';
 local tenant = import 'tenant.json';
 local term = import './term.json';
 local tdsr = import './three_d_secure_request.json';
-local token = import 'paths/token.jsonnet';
+local token = import 'token.json';
 
-local errors = import './errors.json'; /* todo rate_limit */
-local common = import 'common.json';
-local paginations = import './paginations.json';
+local base = import './base.json'; /* todo error rate_limit */
 local f = import './common.jsonnet';
 
-local version = '20241101T12';
-local url = 'https://pay.jp/docs/api';
-
-{
-  "openapi": "3.1.0",
-  "info": {
-    "title": "PAY.JP API",
-    "description": url,
-    "version": version,
-    "summary": "PAY.JP API (unofficial)"
-  },
-  "servers": [
-    {
-      "url": "https://api.pay.jp/v1"
-    }
-  ],
-  /*
-  "paths": {
-    "allOf": [
-      {"$ref": "./paths/balance.json#/paths"}
-    ]
-  },
-  */
+local json = std.manifestJsonMinified(std.mergePatch(base, {
   paths: account.paths +
     balance.paths +
     charge.paths +
@@ -178,10 +154,11 @@ local url = 'https://pay.jp/docs/api';
             f.Retrieve("/tokens/{token}"),
           ]
         }
-      }) +
-      paginations.components.schemas +
-      errors.components.schemas +
-      common.components.schemas,
-    parameters: paginations.components.parameters,
+      })
   }
-}
+}));
+
+/* todo 処理がすごく遅い。node.jsに変えた方がいい */
+std.parseJson(std.strReplace(
+std.strReplace(std.strReplace(json, '"./base.json#', '"#'), '"./customer.json#', '"#')
+, '"./subscription.json#', '"#'))
